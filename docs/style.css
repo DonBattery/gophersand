@@ -1,0 +1,373 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: black;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Pixel font for dialogs and UI */
+@font-face {
+    font-family: 'PressStart2P';
+    src: url('PressStart2P-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Disable text selection across the whole page */
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.sprite-button {
+    border: none;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: auto;
+    display: inline-block;
+    box-sizing: content-box;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    /* remove mobile tap highlight */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-size: 0;
+    /* hide any text nodes */
+
+    /* crisp pixel art rendering */
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    /* small motion for hover/press */
+    transition: transform 100ms ease-out;
+}
+
+.sprite-button:focus,
+.sprite-button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* remove inner focus border in Firefox */
+.sprite-button::-moz-focus-inner {
+    border: 0;
+}
+
+.sprite-button::-moz-focusring {
+    outline: none !important;
+}
+
+/* small upward motion on hover */
+.sprite-button:hover {
+    transform: translateY(-1px);
+}
+
+/* small downward motion on press */
+.sprite-button:active {
+    transform: translateY(2px);
+}
+
+/* Title button should not react to hover or clicks */
+.sprite-button.title-button {
+    pointer-events: none;
+    cursor: default;
+    transform: none !important;
+}
+
+/* Main layout containers */
+#MainContainer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    background: black;
+    color: white;
+}
+
+/* Layout area above the footer that changes between modes */
+#Layout {
+    flex: 1 1 auto;
+    display: flex;
+}
+
+#Footer {
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px;
+    box-sizing: border-box;
+    background: black;
+}
+
+#FooterTitle,
+#FooterGitHub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Game area + panels share common sizing rules */
+#GameWindow,
+#PanelA,
+#PanelB {
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+/* Game window and iframe keep a 1:1 aspect ratio where possible */
+#GameWindow {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#GameFrame {
+    border: none;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+/* ---------- FullVertical: game on top, 4x4 buttons below ---------- */
+#Layout.FullVertical {
+    flex-direction: column;
+}
+
+#Layout.FullVertical #GameWindow {
+    flex: 0 0 auto;
+    height: 50vh;
+    width: 100%;
+}
+
+#Layout.FullVertical #GameFrame {
+    height: 100%;
+    width: auto;
+}
+
+#Layout.FullVertical #PanelA {
+    flex: 1 1 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 3px;
+    justify-items: center;
+    align-items: center;
+}
+
+#Layout.FullVertical #PanelB {
+    display: none;
+}
+
+/* ---------- SmallVertical: game on top, 2x8 buttons at bottom ---------- */
+#Layout.SmallVertical {
+    flex-direction: column;
+}
+
+#Layout.SmallVertical #GameWindow {
+    flex: 0 0 auto;
+    height: 50vh;
+    width: 100%;
+}
+
+#Layout.SmallVertical #GameFrame {
+    height: 100%;
+    width: auto;
+}
+
+#Layout.SmallVertical #PanelA {
+    flex: 1 1 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 3px;
+    justify-items: center;
+    align-items: center;
+}
+
+#Layout.SmallVertical #PanelB {
+    display: none;
+}
+
+/* ---------- FullHorizontal: left/right button panels, game centered ---------- */
+#Layout.FullHorizontal {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+#Layout.FullHorizontal #GameWindow {
+    flex: 0 0 auto;
+    /* Fill the available layout height so the footer remains visible */
+    height: 100%;
+}
+
+#Layout.FullHorizontal #GameFrame {
+    width: 100%;
+    height: 100%;
+}
+
+#Layout.FullHorizontal #PanelA,
+#Layout.FullHorizontal #PanelB {
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 3px;
+    justify-items: center;
+    align-items: center;
+}
+
+/* Ensure left panel, then game, then right panel order in FullHorizontal */
+#Layout.FullHorizontal #PanelA {
+    order: 0;
+}
+
+#Layout.FullHorizontal #GameWindow {
+    order: 1;
+}
+
+#Layout.FullHorizontal #PanelB {
+    order: 2;
+}
+
+/* ---------- SmallHorizontal: single 8x2 panel on left, game on right ---------- */
+#Layout.SmallHorizontal {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+#Layout.SmallHorizontal #PanelA {
+    flex: 0 0 35%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 3px;
+    justify-items: center;
+    align-items: center;
+}
+
+#Layout.SmallHorizontal #GameWindow {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#Layout.SmallHorizontal #GameFrame {
+    /* Keep the game roughly square, but never taller/wider than the
+       available layout space so the footer remains visible. */
+    width: min(100vmin, 100%);
+    height: min(100vmin, 100%);
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#Layout.SmallHorizontal #PanelB {
+    display: none;
+}
+
+/* Ensure button panel is on the left, game on the right in SmallHorizontal */
+#Layout.SmallHorizontal #PanelA {
+    order: 0;
+}
+
+#Layout.SmallHorizontal #GameWindow {
+    order: 1;
+}
+
+/* ---------- Confirmation pop-up (erase / gen) ---------- */
+#ConfirmOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+#ConfirmOverlay.visible {
+    display: flex;
+}
+
+#ConfirmDialog {
+    background: black;
+    border: 2px solid #ffffff;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    color: white;
+    text-align: center;
+    font-family: 'PressStart2P', monospace;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#ConfirmText {
+    margin-bottom: 16px;
+}
+
+#ConfirmButtons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.confirm-dialog-button {
+    font-family: 'PressStart2P', monospace;
+    padding: 6px 12px;
+    border: 2px solid #ffffff;
+    background: #000000;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+/* dynamic color schemes for buttons */
+.confirm-dialog-button:hover {
+    background: #222222;
+}
+
+.confirm-dialog-button:active {
+    background: #444444;
+}
+
+.confirm-primary-erase {
+    border-color: #ff5555;
+    background: #8b0000;
+}
+
+.confirm-primary-erase:hover {
+    background: #a40000;
+}
+
+.confirm-primary-erase:active {
+    background: #c00000;
+}
+
+.confirm-primary-gen {
+    border-color: #55ff55;
+    background: #006400;
+}
+
+.confirm-primary-gen:hover {
+    background: #008000;
+}
+
+.confirm-primary-gen:active {
+    background: #00a000;
+}

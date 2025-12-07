@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="wasm_exec.js"></script>
+<script>
+    // Load the WASM file
+    const go = new Go();
+    WebAssembly.instantiateStreaming(fetch("gophersand.wasm"), go.importObject).then(result => {
+        go.run(result.instance);
+    });
+
+    // Channel parent messages into the WASM game
+    window.addEventListener("message", (e) => {
+        const data = e.data;
+        if (!data || data.type !== "game-cmd") return;
+
+        if (window.sendToGame) {
+            window.sendToGame(String(data.payload || ""));
+        }
+    });
+</script>
