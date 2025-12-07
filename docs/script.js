@@ -625,7 +625,7 @@ const App = {
                 sheetWidth: SPRITE_SHEET_WIDTH,
                 sheetHeight: SPRITE_SHEET_HEIGHT,
                 onClick: () => {
-                    console.log('GitHub button clicked');
+                    window.open('https://github.com/DonBattery/gophersand', '_blank');
                 }
             });
         }
