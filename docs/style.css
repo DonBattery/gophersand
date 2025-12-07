@@ -135,7 +135,8 @@ body {
 }
 
 #GameFrame {
-    border: none;
+    border: 2px solid #f2f2da;
+    border-radius: 2px;
     width: 100%;
     height: 100%;
     aspect-ratio: 1 / 1;
