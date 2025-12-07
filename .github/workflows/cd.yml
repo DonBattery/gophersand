@@ -32,6 +32,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            xvfb \
             libasound2-dev \
             libxxf86vm-dev \
             libgl1-mesa-dev \
