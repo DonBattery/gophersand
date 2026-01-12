@@ -68,7 +68,7 @@ func NewMouseButton(button ebiten.MouseButton) *Button {
 
 type Cursor struct {
 	PosX      int
-	Posy      int
+	PosY      int
 	LeftDown  bool
 	RightDown bool
 }
@@ -82,7 +82,6 @@ var (
 	MousePrevX int
 	MousePrevY int
 
-	MousePos       = V2()
 	MouseWheelUp   bool
 	MouseWheelDown bool
 
@@ -100,6 +99,7 @@ var (
 	KeyF4  = NewKeyboardButton(ebiten.KeyF4)
 	KeyF12 = NewKeyboardButton(ebiten.KeyF12)
 
+	KeyN0 = NewKeyboardButton(ebiten.Key0)
 	KeyN1 = NewKeyboardButton(ebiten.Key1)
 	KeyN2 = NewKeyboardButton(ebiten.Key2)
 	KeyN3 = NewKeyboardButton(ebiten.Key3)
@@ -113,9 +113,18 @@ var (
 	KeyBracketLeft  = NewKeyboardButton(ebiten.KeyBracketLeft)
 	KeyBracketRight = NewKeyboardButton(ebiten.KeyBracketRight)
 
+	LeftArrow  = NewKeyboardButton(ebiten.KeyArrowLeft)
+	RightArrow = NewKeyboardButton(ebiten.KeyArrowRight)
+	UpArrow    = NewKeyboardButton(ebiten.KeyArrowUp)
+	DownArrow  = NewKeyboardButton(ebiten.KeyArrowDown)
+
 	KeyB = NewKeyboardButton(ebiten.KeyB)
 	KeyD = NewKeyboardButton(ebiten.KeyD)
+	KeyE = NewKeyboardButton(ebiten.KeyE)
+	KeyF = NewKeyboardButton(ebiten.KeyF)
+	KeyG = NewKeyboardButton(ebiten.KeyG)
 	KeyL = NewKeyboardButton(ebiten.KeyL)
+	KeyP = NewKeyboardButton(ebiten.KeyP)
 )
 
 func UpdateInputs() {
@@ -143,22 +152,20 @@ func UpdateInputs() {
 	MouseLeft.Update()
 	MouseRight.Update()
 
-	MousePrevX = MouseX
-	MousePrevY = MouseY
-
 	// set mouse to active if any movement or button / wheel action is detected
-	if MouseX != MousePrevX || MouseY != MousePrevY || MouseWheelUp || MouseWheelDown || MouseLeft.Pressed || MouseRight.Pressed {
+	if !MouseActive && (MouseX != MousePrevX || MouseY != MousePrevY || MouseWheelUp || MouseWheelDown || MouseLeft.Pressed || MouseRight.Pressed) {
 		MouseActive = true
 	}
 
+	MousePrevX = MouseX
+	MousePrevY = MouseY
 	MouseX = x
 	MouseY = y
-	MousePos.Set(float32(x), float32(y))
 
 	if MouseActive {
 		NumberOfCursors = 1
 		Cursors[0].PosX = MouseX
-		Cursors[0].Posy = MouseY
+		Cursors[0].PosY = MouseY
 		Cursors[0].LeftDown = MouseLeft.IsDown
 		Cursors[0].RightDown = MouseRight.IsDown
 	} else {
@@ -168,7 +175,7 @@ func UpdateInputs() {
 		for i := 0; i < NumberOfCursors; i++ {
 			posX, posY := ebiten.TouchPosition(touchIds[i])
 			Cursors[i].PosX = posX
-			Cursors[i].Posy = posY
+			Cursors[i].PosY = posY
 			Cursors[i].LeftDown = !inpututil.IsTouchJustReleased(touchIds[i])
 			Cursors[i].RightDown = false
 		}
@@ -181,6 +188,7 @@ func UpdateInputs() {
 	KeyF4.Update()
 	KeyF12.Update()
 
+	KeyN0.Update()
 	KeyN1.Update()
 	KeyN2.Update()
 	KeyN3.Update()
@@ -194,7 +202,16 @@ func UpdateInputs() {
 	KeyBracketLeft.Update()
 	KeyBracketRight.Update()
 
+	LeftArrow.Update()
+	RightArrow.Update()
+	UpArrow.Update()
+	DownArrow.Update()
+
 	KeyB.Update()
 	KeyD.Update()
+	KeyE.Update()
+	KeyF.Update()
+	KeyG.Update()
 	KeyL.Update()
+	KeyP.Update()
 }

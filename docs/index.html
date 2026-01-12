@@ -13,37 +13,27 @@
 </head>
 
 <body>
-    <img src="sprite_sheet.png" id="SpriteSheet" style="display:none;">
+    <img src="sprite_sheet.png" id="SpriteSheetImg">
 
     <div id="MainContainer">
-        <div id="Layout">
-            <div id="GameWindow">
-                <iframe src="game.html" id="GameFrame"></iframe>
-                <div id="ConfirmOverlay">
-                    <div id="ConfirmDialog">
-                        <div id="ConfirmText">
-                            do you really want to erase the current state, and start a new empty world?
-                        </div>
-                        <div id="ConfirmButtons">
-                            <button id="ConfirmPrimary" class="confirm-dialog-button">erase</button>
-                            <button id="ConfirmCancel" class="confirm-dialog-button">no</button>
-                        </div>
-                    </div>
-                </div>
+        <div class="btn-grid" id="ButtonPanelA">
+            <div class="btn-container">
+                <div class="btn btn-brush" id="SandBrushButton"></div>
             </div>
-            <div id="PanelA"></div>
-            <div id="PanelB"></div>
         </div>
-
-        <div id="Footer">
-            <div id="FooterTitle"></div>
-            <div id="FooterGitHub"></div>
+        <div id="GameWindow">
+            <div id="GameContainer">
+                <iframe src="game.html" id="GameFrame"></iframe>
+            </div>
         </div>
+        <div class="btn-grid" id="ButtonPanelB">
+            <div class="btn-container">
+                <div class="btn btn-world" id="PlayButton"></div>
+            </div>
+        </div>
+        <div class="hidden" id="PopUp"></div>
     </div>
 
-    <!-- <p id="dimensions" style="color:white;position:fixed;bottom:0;left:0;font-size:12px;"></p> -->
-
-    <script src="jquery.min.js"></script>
     <script src="script.js"></script>
 </body>
 

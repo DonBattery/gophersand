@@ -1,446 +1,514 @@
+// material_test.go
 package game
 
 import (
+	"reflect"
 	"testing"
 )
 
-// Test basic material construction
-func TestNewMaterial(t *testing.T) {
-	tests := []struct {
-		name     string
-		matType  MaterialType
-		flags    []MaterialKindFlag
-		expected uint32
-	}{
-		{
-			name:     "Empty material",
-			matType:  TypeEmpty,
-			flags:    nil,
-			expected: 0,
-		},
-		{
-			name:     "Stone with flags",
-			matType:  TypeStone,
-			flags:    []MaterialKindFlag{KindStatic, KindSolid},
-			expected: uint32(TypeStone) | uint32(KindStatic) | uint32(KindSolid),
-		},
-		{
-			name:     "Sand with solid flag",
-			matType:  TypeSand,
-			flags:    []MaterialKindFlag{KindSolid},
-			expected: uint32(TypeSand) | uint32(KindSolid),
-		},
+func TestMaterialConstantsMatchKindValues(t *testing.T) {
+	mats := []Material{
+		MaterialEmpty,
+		MaterialStone,
+		MaterialSand,
+		MaterialWater,
+		MaterialSeed,
+		MaterialAnt,
+		MaterialWasp,
+		MaterialAcid,
+		MaterialFire,
+		MaterialIce,
+		MaterialSmoke,
+		MaterialSteam,
+		MaterialRoot,
+		MaterialPlant,
+		MaterialFlower,
+		MaterialAntHill,
+	}
+	kinds := []MaterialKind{
+		MaterialKindEmpty,
+		MaterialKindStone,
+		MaterialKindSand,
+		MaterialKindWater,
+		MaterialKindSeed,
+		MaterialKindAnt,
+		MaterialKindWasp,
+		MaterialKindAcid,
+		MaterialKindFire,
+		MaterialKindIce,
+		MaterialKindSmoke,
+		MaterialKindSteam,
+		MaterialKindRoot,
+		MaterialKindPlant,
+		MaterialKindFlower,
+		MaterialKindAntHill,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := NewMaterial(tt.matType, tt.flags...)
-			if uint32(m) != tt.expected {
-				t.Errorf("NewMaterial() = %d, want %d", uint32(m), tt.expected)
-			}
-		})
-	}
-}
-
-// Test GetType method
-func TestMaterial_GetType(t *testing.T) {
-	tests := []struct {
-		name     string
-		material Material
-		want     byte
-	}{
-		{"Empty", MaterialEmpty, byte(TypeEmpty)},
-		{"Stone", MaterialStone, byte(TypeStone)},
-		{"Sand", MaterialSand, byte(TypeSand)},
-		{"Water", MaterialWater, byte(TypeWater)},
-		{"Smoke", MaterialSmoke, byte(TypeSmoke)},
+	if len(mats) != 16 || len(kinds) != 16 {
+		t.Fatalf("expected 16 materials and 16 kinds")
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.material.GetType(); got != tt.want {
-				t.Errorf("Material.GetType() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// Test IsType method
-func TestMaterial_IsType(t *testing.T) {
-	tests := []struct {
-		name      string
-		material  Material
-		checkType MaterialType
-		want      bool
-	}{
-		{"Stone is Stone", MaterialStone, TypeStone, true},
-		{"Stone is not Sand", MaterialStone, TypeSand, false},
-		{"Water is Water", MaterialWater, TypeWater, true},
-		{"Empty is Empty", MaterialEmpty, TypeEmpty, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.material.IsType(tt.checkType); got != tt.want {
-				t.Errorf("Material.IsType() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// Test FilterAny method
-func TestMaterial_FilterAny(t *testing.T) {
-	tests := []struct {
-		name     string
-		material Material
-		filter   MaterialKindFilter
-		want     bool
-	}{
-		{"Stone matches Static filter", MaterialStone, StaticMaterials, true},
-		{"Stone matches Solid filter", MaterialStone, SolidMaterials, true},
-		{"Stone doesn't match Liquid filter", MaterialStone, LiquidMaterials, false},
-		{"Water matches Liquid filter", MaterialWater, LiquidMaterials, true},
-		{"Water matches Penetrable filter", MaterialWater, PenetrableMaterials, true},
-		{"Empty filter matches everything", MaterialStone, MaterialKindFilter(0), true},
-		{"Sand doesn't match Static", MaterialSand, StaticMaterials, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.material.FilterAny(tt.filter); got != tt.want {
-				t.Errorf("Material.FilterAny() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// Test FilterAll method
-func TestMaterial_FilterAll(t *testing.T) {
-	staticAndSolid := NewMaterialKindFilter(KindStatic, KindSolid)
-
-	tests := []struct {
-		name     string
-		material Material
-		filter   MaterialKindFilter
-		want     bool
-	}{
-		{"Stone has both Static and Solid", MaterialStone, staticAndSolid, true},
-		{"Sand doesn't have Static", MaterialSand, staticAndSolid, false},
-		{"Water doesn't have Solid", MaterialWater, SolidMaterials, false},
-		{"Stone has Static", MaterialStone, StaticMaterials, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.material.FilterAll(tt.filter); got != tt.want {
-				t.Errorf("Material.FilterAll() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// Test FilterNone method
-func TestMaterial_FilterNone(t *testing.T) {
-	tests := []struct {
-		name     string
-		material Material
-		filter   MaterialKindFilter
-		want     bool
-	}{
-		{"Stone has Static, so none is false", MaterialStone, StaticMaterials, false},
-		{"Sand has no Static flag", MaterialSand, StaticMaterials, true},
-		{"Water has no Solid flag", MaterialWater, SolidMaterials, true},
-		{"Empty has no flags", MaterialEmpty, SolidMaterials, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.material.FilterNone(tt.filter); got != tt.want {
-				t.Errorf("Material.FilterNone() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// Test data bit manipulation
-func TestMaterial_GetSetBits(t *testing.T) {
-	m := MaterialSand
-
-	// Initially, bit 0 should be false
-	if m.Get(0) {
-		t.Error("Bit 0 should initially be false")
-	}
-
-	// Set bit 0
-	m = m.Set(0)
-	if !m.Get(0) {
-		t.Error("Bit 0 should be true after Set(0)")
-	}
-
-	// Set bit 5
-	m = m.Set(5)
-	if !m.Get(5) {
-		t.Error("Bit 5 should be true after Set(5)")
-	}
-
-	// Bit 0 should still be set
-	if !m.Get(0) {
-		t.Error("Bit 0 should still be true")
-	}
-
-	// Unset bit 0
-	m = m.Unset(0)
-	if m.Get(0) {
-		t.Error("Bit 0 should be false after Unset(0)")
-	}
-
-	// Bit 5 should still be set
-	if !m.Get(5) {
-		t.Error("Bit 5 should still be true")
-	}
-
-	// Type should be preserved
-	if !m.IsType(TypeSand) {
-		t.Error("Material type should still be Sand")
-	}
-}
-
-// Test GetInt and SetInt
-func TestMaterial_GetSetInt(t *testing.T) {
-	m := MaterialWater
-
-	// Set a 4-bit value at position 0
-	m = m.SetInt(0, 4, 7) // Binary: 0111
-	if got := m.GetInt(0, 4); got != 7 {
-		t.Errorf("GetInt(0, 4) = %d, want 7", got)
-	}
-
-	// Set a 3-bit value at position 4
-	m = m.SetInt(4, 3, 5) // Binary: 101
-	if got := m.GetInt(4, 3); got != 5 {
-		t.Errorf("GetInt(4, 3) = %d, want 5", got)
-	}
-
-	// First value should still be there
-	if got := m.GetInt(0, 4); got != 7 {
-		t.Errorf("GetInt(0, 4) = %d, want 7 (should be preserved)", got)
-	}
-
-	// Type should be preserved
-	if !m.IsType(TypeWater) {
-		t.Error("Material type should still be Water")
-	}
-}
-
-// Test SetInt with overlapping writes
-func TestMaterial_SetInt_Overlapping(t *testing.T) {
-	m := MaterialEmpty
-
-	// Write 8 bits: 11111111 (255)
-	m = m.SetInt(0, 8, 255)
-	if got := m.GetInt(0, 8); got != 255 {
-		t.Errorf("GetInt(0, 8) = %d, want 255", got)
-	}
-
-	// Overwrite middle 4 bits with 0000
-	m = m.SetInt(2, 4, 0)
-
-	// Check the result: bits should be 11000011 (195)
-	if got := m.GetInt(0, 8); got != 195 {
-		t.Errorf("GetInt(0, 8) = %d, want 195", got)
-	}
-}
-
-// Test GetField and SetField
-func TestMaterial_GetSetField(t *testing.T) {
-	flowField := MaterialDataField{Pos: 4, Len: 3}
-
-	m := MaterialWater
-	m = m.SetField(flowField, 6)
-
-	if got := m.GetField(flowField); got != 6 {
-		t.Errorf("GetField() = %d, want 6", got)
-	}
-
-	// Type should be preserved
-	if !m.IsType(TypeWater) {
-		t.Error("Material type should still be Water")
-	}
-}
-
-// Test RandomField
-func TestMaterial_RandomField(t *testing.T) {
-	field := MaterialDataField{Pos: 0, Len: 4}
-	m := MaterialSand
-
-	// Run multiple times to check range
-	for i := 0; i < 100; i++ {
-		m = m.RandomField(field)
-		val := m.GetField(field)
-
-		if val < 0 || val >= 16 {
-			t.Errorf("RandomField produced out-of-range value: %d (expected 0-15)", val)
-		}
-
-		// Type should be preserved
-		if !m.IsType(TypeSand) {
-			t.Error("Material type should still be Sand")
-		}
-	}
-}
-
-// Test DirectionData field
-func TestMaterial_Direction(t *testing.T) {
-	m := MaterialWater
-
-	// Initially should face right (false)
-	if m.FaceLeft() {
-		t.Error("Should initially face right")
-	}
-
-	// Set direction to left
-	m = m.Set(DirectionData.Pos)
-	if !m.FaceLeft() {
-		t.Error("Should face left after Set")
-	}
-
-	// Unset direction (face right)
-	m = m.Unset(DirectionData.Pos)
-	if m.FaceLeft() {
-		t.Error("Should face right after Unset")
-	}
-
-	// RandomDirection should produce valid values
-	m = m.RandomDirection()
-	_ = m.FaceLeft() // Should not panic
-}
-
-// Test convenience methods
-func TestMaterial_ConvenienceMethods(t *testing.T) {
-	tests := []struct {
-		name     string
-		material Material
-		method   string
-		want     bool
-	}{
-		{"Empty.IsEmpty", MaterialEmpty, "IsEmpty", true},
-		{"Stone.IsEmpty", MaterialStone, "IsEmpty", false},
-		{"Stone.IsStatic", MaterialStone, "IsStatic", true},
-		{"Sand.IsStatic", MaterialSand, "IsStatic", false},
-		{"Stone.IsSolid", MaterialStone, "IsSolid", true},
-		{"Water.IsSolid", MaterialWater, "IsSolid", false},
-		{"Water.IsLiquid", MaterialWater, "IsLiquid", true},
-		{"Stone.IsLiquid", MaterialStone, "IsLiquid", false},
-		{"Smoke.IsGas", MaterialSmoke, "IsGas", true},
-		{"Water.IsGas", MaterialWater, "IsGas", false},
-		{"Empty.IsPenetrable", MaterialEmpty, "IsPenetrable", true},
-		{"Water.IsPenetrable", MaterialWater, "IsPenetrable", true},
-		{"Stone.IsPenetrable", MaterialStone, "IsPenetrable", false},
-		{"Empty.IsFlowable", MaterialEmpty, "IsFlowable", true},
-		{"Smoke.IsFlowable", MaterialSmoke, "IsFlowable", true},
-		{"Water.IsFlowable", MaterialWater, "IsFlowable", false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var got bool
-			switch tt.method {
-			case "IsEmpty":
-				got = tt.material.IsEmpty()
-			case "IsStatic":
-				got = tt.material.IsStatic()
-			case "IsSolid":
-				got = tt.material.IsSolid()
-			case "IsLiquid":
-				got = tt.material.IsLiquid()
-			case "IsGas":
-				got = tt.material.IsGas()
-			case "IsPenetrable":
-				got = tt.material.IsPenetrable()
-			case "IsFlowable":
-				got = tt.material.IsFlowable()
-			}
-
-			if got != tt.want {
-				t.Errorf("%s.%s() = %v, want %v", tt.name, tt.method, got, tt.want)
-			}
-		})
-	}
-}
-
-// Test String method
-func TestMaterial_String(t *testing.T) {
-	tests := []struct {
-		material Material
-		want     string
-	}{
-		{MaterialEmpty, "Empty"},
-		{MaterialStone, "Stone"},
-		{MaterialSand, "Sand"},
-		{MaterialWater, "Water"},
-		{MaterialSmoke, "Smoke"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.want, func(t *testing.T) {
-			if got := tt.material.String(); got != tt.want {
-				t.Errorf("Material.String() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// Test that data modifications don't affect type or kind
-func TestMaterial_DataIsolation(t *testing.T) {
-	m := MaterialStone
-
-	// Store original type and check flags
-	originalType := m.GetType()
-	wasStatic := m.IsStatic()
-	wasSolid := m.IsSolid()
-
-	// Modify all data bits
 	for i := 0; i < 16; i++ {
-		m = m.Set(i)
-	}
+		if mats[i] != Material(i) {
+			t.Fatalf("material constant index %d expected %d got %d", i, i, mats[i])
+		}
+		if kinds[i] != MaterialKind(i) {
+			t.Fatalf("kind constant index %d expected %d got %d", i, i, kinds[i])
+		}
 
-	// Type and kind should be unchanged
-	if m.GetType() != originalType {
-		t.Error("Type changed after data modification")
-	}
-	if m.IsStatic() != wasStatic {
-		t.Error("Static flag changed after data modification")
-	}
-	if m.IsSolid() != wasSolid {
-		t.Error("Solid flag changed after data modification")
+		// Base material's kind should equal its ordinal.
+		if got := mats[i].GetKind(); got != kinds[i] {
+			t.Fatalf("material %d GetKind expected %d got %d", i, kinds[i], got)
+		}
+		if !mats[i].IsKind(kinds[i]) {
+			t.Fatalf("material %d expected IsKind(%d)=true", i, kinds[i])
+		}
 	}
 }
 
-// Benchmark material operations
-func BenchmarkMaterial_GetType(b *testing.B) {
-	m := MaterialStone
-	for i := 0; i < b.N; i++ {
-		_ = m.GetType()
+func TestNewMaterialKindSetAndMaterialKindIsIn(t *testing.T) {
+	set := NewMaterialKindSet(MaterialKindStone, MaterialKindWater, MaterialKindStone /* duplicate */)
+
+	if !MaterialKindStone.IsIn(set) {
+		t.Fatalf("expected Stone in set")
+	}
+	if !MaterialKindWater.IsIn(set) {
+		t.Fatalf("expected Water in set")
+	}
+	if MaterialKindSand.IsIn(set) {
+		t.Fatalf("did not expect Sand in set")
+	}
+
+	// Exhaustive: each kind should round-trip with a singleton set.
+	for k := MaterialKind(0); k < 16; k++ {
+		s := NewMaterialKindSet(k)
+		for kk := MaterialKind(0); kk < 16; kk++ {
+			want := kk == k
+			got := kk.IsIn(s)
+			if got != want {
+				t.Fatalf("k=%d kk=%d expected IsIn=%v got %v", k, kk, want, got)
+			}
+		}
 	}
 }
 
-func BenchmarkMaterial_FilterAny(b *testing.B) {
-	m := MaterialStone
-	for i := 0; i < b.N; i++ {
-		_ = m.FilterAny(SolidMaterials)
+func TestMaterialIsInUsesKind(t *testing.T) {
+	set := NewMaterialKindSet(MaterialKindAnt, MaterialKindWasp)
+
+	mAnt := MaterialAnt.WithLife(3).WithStatus(MaterialStatusFrozen).WithFaceLeft(true)
+	if !mAnt.IsIn(set) {
+		t.Fatalf("expected Ant material to be in set")
+	}
+
+	mOther := MaterialSand.WithLife(1).WithStatus(MaterialStatusNormal)
+	if mOther.IsIn(set) {
+		t.Fatalf("did not expect Sand material to be in set")
 	}
 }
 
-func BenchmarkMaterial_GetInt(b *testing.B) {
-	m := MaterialWater.SetInt(0, 8, 255)
-	for i := 0; i < b.N; i++ {
-		_ = m.GetInt(0, 8)
+func TestGetKindIgnoresHigherBits(t *testing.T) {
+	// Force various higher bits on; kind must still be low 4 bits.
+	for k := Material(0); k < 16; k++ {
+		m := Material(0xFFF0) | k
+		if got := m.GetKind(); got != MaterialKind(k) {
+			t.Fatalf("k=%d: expected kind %d got %d (m=0x%04x)", k, k, got, uint16(m))
+		}
+		if !m.IsKind(MaterialKind(k)) {
+			t.Fatalf("k=%d: expected IsKind true (m=0x%04x)", k, uint16(m))
+		}
 	}
 }
 
-func BenchmarkMaterial_SetInt(b *testing.B) {
-	m := MaterialWater
-	for i := 0; i < b.N; i++ {
-		m = m.SetInt(0, 8, i&255)
+func TestLifeGetSetMaskingAndPreservation(t *testing.T) {
+	orig := MaterialKindWasp
+	m0 := Material(orig).
+		WithStatus(MaterialStatusAcidic).
+		WithFaceLeft(true).
+		WithFaceUp(true).
+		WithWaspHasWater(true).
+		WithWaspHasAnt(true)
+
+	// Masking: life &= 3
+	m1 := m0.WithLife(7)
+	if got := m1.GetLife(); got != 3 {
+		t.Fatalf("expected life=3 after masking, got %d", got)
+	}
+
+	// Preservation: kind/status/state bits must remain unchanged.
+	if m1.GetKind() != MaterialKindWasp {
+		t.Fatalf("kind changed after WithLife")
+	}
+	if m1.GetStatus() != MaterialStatusAcidic {
+		t.Fatalf("status changed after WithLife")
+	}
+	if !m1.GetFaceLeft() || !m1.GetFaceUp() {
+		t.Fatalf("face bits changed after WithLife")
+	}
+	if !m1.GetWaspHasWater() || !m1.GetWaspHasAnt() {
+		t.Fatalf("wasp bits changed after WithLife")
+	}
+
+	// Round-trip over all life values (including out of range).
+	for life := uint8(0); life < 8; life++ {
+		m := MaterialSand.WithLife(life)
+		want := life & 3
+		if got := m.GetLife(); got != want {
+			t.Fatalf("life=%d: expected %d got %d", life, want, got)
+		}
+	}
+}
+
+func TestStatusGetSetMaskingAndPreservation(t *testing.T) {
+	m0 := MaterialKindAntHill
+	m := Material(m0).
+		WithLife(2).
+		WithFaceLeft(true).
+		WithFaceUp(false).
+		WithIsPenetrable(true).
+		WithCanBloom(true) // uses a different bit than IsPenetrable
+
+	// Masking: status &= 3
+	m1 := m.WithStatus(255)
+	if got := m1.GetStatus(); got != 3 {
+		t.Fatalf("expected status=3 after masking, got %d", got)
+	}
+
+	// Preservation checks.
+	if m1.GetKind() != MaterialKindAntHill {
+		t.Fatalf("kind changed after WithStatus")
+	}
+	if m1.GetLife() != 2 {
+		t.Fatalf("life changed after WithStatus")
+	}
+	if !m1.GetFaceLeft() || m1.GetFaceUp() {
+		t.Fatalf("face bits changed after WithStatus")
+	}
+	if !m1.GetIsPenetrable() {
+		t.Fatalf("penetrable bit changed after WithStatus")
+	}
+	if !m1.GetCanBloom() {
+		t.Fatalf("canBloom bit changed after WithStatus")
+	}
+
+	// Round-trip over all status values (including out of range).
+	for st := uint8(0); st < 8; st++ {
+		m := MaterialStone.WithStatus(st)
+		want := st & 3
+		if got := m.GetStatus(); got != want {
+			t.Fatalf("status=%d: expected %d got %d", st, want, got)
+		}
+	}
+}
+
+func TestGetColorMatchesMaterialColorsIndexing(t *testing.T) {
+	// This test is intentionally "indexing only": it verifies GetColor returns
+	// exactly MaterialColors[k*16 + s*4 + l] for multiple combinations.
+	//
+	// If MaterialColors is not at least 256 entries, GetColor would panic; treat
+	// that as a test failure with a clearer message.
+	if len(MaterialColors) < 16*16 {
+		t.Fatalf("MaterialColors too short: got %d need at least %d", len(MaterialColors), 16*16)
+	}
+
+	for k := MaterialKind(0); k < 16; k++ {
+		for st := uint8(0); st < 4; st++ {
+			for life := uint8(0); life < 4; life++ {
+				m := Material(k).WithStatus(st).WithLife(life)
+				idx := int(k)*16 + int(st)*4 + int(life)
+
+				got := m.GetColor()
+				want := MaterialColors[idx]
+
+				if !reflect.DeepEqual(got, want) {
+					t.Fatalf("k=%d st=%d life=%d idx=%d: GetColor mismatch", k, st, life, idx)
+				}
+			}
+		}
+	}
+}
+
+func TestFaceLeftAndFaceUpBits(t *testing.T) {
+	m := MaterialSeed
+
+	if m.GetFaceLeft() || m.GetFaceUp() {
+		t.Fatalf("expected face bits off by default for base material")
+	}
+
+	m = m.WithFaceLeft(true)
+	if !m.GetFaceLeft() || m.GetFaceUp() {
+		t.Fatalf("expected FaceLeft on, FaceUp unchanged/off")
+	}
+
+	m = m.WithFaceUp(true)
+	if !m.GetFaceLeft() || !m.GetFaceUp() {
+		t.Fatalf("expected both FaceLeft and FaceUp on")
+	}
+
+	m = m.WithFaceLeft(false)
+	if m.GetFaceLeft() || !m.GetFaceUp() {
+		t.Fatalf("expected FaceLeft off, FaceUp still on")
+	}
+
+	m = m.WithFaceUp(false)
+	if m.GetFaceLeft() || m.GetFaceUp() {
+		t.Fatalf("expected both face bits off")
+	}
+
+	// Sanity on bit locations (internal constants).
+	if stateFaceLeft != (Material(1) << 8) {
+		t.Fatalf("stateFaceLeft expected bit 8, got 0x%04x", uint16(stateFaceLeft))
+	}
+	if stateFaceUp != (Material(1) << 9) {
+		t.Fatalf("stateFaceUp expected bit 9, got 0x%04x", uint16(stateFaceUp))
+	}
+}
+
+func TestAliasBitLayoutAndIndependence(t *testing.T) {
+	// Verify intended aliasing.
+	if isPenetrableBit != stateFlagA {
+		t.Fatalf("isPenetrableBit expected to alias stateFlagA")
+	}
+	if isTopPetalBit != stateFlagA {
+		t.Fatalf("isTopPetalBit expected to alias stateFlagA")
+	}
+	if canBloomBit != stateFlagD {
+		t.Fatalf("canBloomBit expected to alias stateFlagD")
+	}
+	if canBloomBit == isPenetrableBit {
+		t.Fatalf("canBloomBit must not share bit with isPenetrableBit")
+	}
+
+	// For Plant: penetrable uses FlagA; canBloom uses FlagD -> must be independent.
+	m := MaterialPlant.WithIsPenetrable(true).WithCanBloom(true)
+	if !m.GetIsPenetrable() || !m.GetCanBloom() {
+		t.Fatalf("expected both IsPenetrable and CanBloom true")
+	}
+
+	m2 := m.WithIsPenetrable(false)
+	if m2.GetIsPenetrable() {
+		t.Fatalf("expected IsPenetrable false")
+	}
+	if !m2.GetCanBloom() {
+		t.Fatalf("expected CanBloom unchanged true")
+	}
+
+	m3 := m.WithCanBloom(false)
+	if !m3.GetIsPenetrable() {
+		t.Fatalf("expected IsPenetrable unchanged true")
+	}
+	if m3.GetCanBloom() {
+		t.Fatalf("expected CanBloom false")
+	}
+}
+
+func TestWaspCollectionBits(t *testing.T) {
+	// Verify aliasing to canonical flags.
+	if waspHasWaterBit != stateFlagB {
+		t.Fatalf("waspHasWaterBit expected to alias stateFlagB")
+	}
+	if waspHasAntBit != stateFlagC {
+		t.Fatalf("waspHasAntBit expected to alias stateFlagC")
+	}
+	if waspHasWaterBit == waspHasAntBit {
+		t.Fatalf("waspHasWaterBit and waspHasAntBit must be distinct")
+	}
+
+	m := MaterialWasp
+	if m.GetWaspHasWater() || m.GetWaspHasAnt() {
+		t.Fatalf("expected wasp flags off by default")
+	}
+
+	m = m.WithWaspHasWater(true)
+	if !m.GetWaspHasWater() || m.GetWaspHasAnt() {
+		t.Fatalf("expected WaspHasWater on and WaspHasAnt unchanged/off")
+	}
+
+	m = m.WithWaspHasAnt(true)
+	if !m.GetWaspHasWater() || !m.GetWaspHasAnt() {
+		t.Fatalf("expected both wasp flags on")
+	}
+
+	m = m.WithWaspHasWater(false)
+	if m.GetWaspHasWater() || !m.GetWaspHasAnt() {
+		t.Fatalf("expected WaspHasWater off, WaspHasAnt still on")
+	}
+
+	m = m.WithWaspHasAnt(false)
+	if m.GetWaspHasWater() || m.GetWaspHasAnt() {
+		t.Fatalf("expected both wasp flags off")
+	}
+}
+
+func TestPredefinedKindSetsContainExpectedMembership(t *testing.T) {
+	type setCase struct {
+		name     string
+		set      MaterialKindSet
+		in       []MaterialKind
+		notInAny []MaterialKind
+	}
+
+	cases := []setCase{
+		{
+			name: "RootGrowableKinds",
+			set:  RootGrowableKinds,
+			in: []MaterialKind{
+				MaterialKindAntHill,
+				MaterialKindEmpty,
+				MaterialKindSteam,
+				MaterialKindSmoke,
+				MaterialKindPlant,
+			},
+			notInAny: []MaterialKind{MaterialKindWater, MaterialKindStone},
+		},
+		{
+			name: "PlantGrowableKinds",
+			set:  PlantGrowableKinds,
+			in: []MaterialKind{
+				MaterialKindEmpty,
+				MaterialKindAntHill,
+				MaterialKindSteam,
+				MaterialKindSmoke,
+				MaterialKindRoot,
+			},
+			notInAny: []MaterialKind{MaterialKindWater, MaterialKindFire},
+		},
+		{
+			name: "PlantSupporterKinds",
+			set:  PlantSupporterKinds,
+			in: []MaterialKind{
+				MaterialKindStone,
+				MaterialKindSand,
+				MaterialKindSeed,
+				MaterialKindRoot,
+				MaterialKindPlant,
+				MaterialKindFlower,
+			},
+			notInAny: []MaterialKind{MaterialKindEmpty, MaterialKindWater},
+		},
+		{
+			name: "AntSupporterKinds",
+			set:  AntSupporterKinds,
+			in: []MaterialKind{
+				MaterialKindStone,
+				MaterialKindSand,
+				MaterialKindSeed,
+				MaterialKindAntHill,
+				MaterialKindRoot,
+				MaterialKindPlant,
+				MaterialKindFlower,
+				MaterialKindAnt,
+			},
+			notInAny: []MaterialKind{MaterialKindEmpty, MaterialKindWater},
+		},
+		{
+			name: "AntAliveKinds",
+			set:  AntAliveKinds,
+			in: []MaterialKind{
+				MaterialKindSeed,
+				MaterialKindRoot,
+				MaterialKindPlant,
+				MaterialKindFlower,
+				MaterialKindAntHill,
+			},
+			notInAny: []MaterialKind{MaterialKindStone, MaterialKindEmpty},
+		},
+		{
+			name: "AntEggLayableKinds",
+			set:  AntEggLayableKinds,
+			in: []MaterialKind{
+				MaterialKindEmpty,
+				MaterialKindAntHill,
+				MaterialKindSteam,
+				MaterialKindSmoke,
+				MaterialKindRoot,
+				MaterialKindPlant,
+				MaterialKindFlower,
+			},
+			notInAny: []MaterialKind{MaterialKindStone, MaterialKindWater},
+		},
+		{
+			name: "AntFallableKinds",
+			set:  AntFallableKinds,
+			in: []MaterialKind{
+				MaterialKindEmpty,
+				MaterialKindSteam,
+				MaterialKindSmoke,
+				MaterialKindFire,
+				MaterialKindWater,
+				MaterialKindAcid,
+			},
+			notInAny: []MaterialKind{MaterialKindStone, MaterialKindSand},
+		},
+		{
+			name: "WaspEggStickyKinds",
+			set:  WaspEggStickyKinds,
+			in: []MaterialKind{
+				MaterialKindStone,
+				MaterialKindSand,
+				MaterialKindSeed,
+				MaterialKindRoot,
+				MaterialKindPlant,
+				MaterialKindFlower,
+			},
+			notInAny: []MaterialKind{MaterialKindEmpty, MaterialKindWater},
+		},
+		{
+			name: "WaspEggLayableKinds",
+			set:  WaspEggLayableKinds,
+			in: []MaterialKind{
+				MaterialKindEmpty,
+				MaterialKindAntHill,
+				MaterialKindSteam,
+				MaterialKindSmoke,
+				MaterialKindPlant,
+			},
+			notInAny: []MaterialKind{MaterialKindStone, MaterialKindWater},
+		},
+		{
+			name: "FreezableKinds",
+			set:  FreezableKinds,
+			in: []MaterialKind{
+				MaterialKindEmpty,
+				MaterialKindSteam,
+				MaterialKindSmoke,
+				MaterialKindPlant,
+			},
+			notInAny: []MaterialKind{MaterialKindStone, MaterialKindWater},
+		},
+		{
+			name: "PlantFoodKinds",
+			set:  PlantFoodKinds,
+			in: []MaterialKind{
+				MaterialKindWater,
+				MaterialKindSand,
+			},
+			notInAny: []MaterialKind{MaterialKindStone, MaterialKindEmpty},
+		},
+		{
+			name: "NonCondensableKinds",
+			set:  NonCondensableKinds,
+			in: []MaterialKind{
+				MaterialKindEmpty,
+				MaterialKindSteam,
+				MaterialKindSmoke,
+				MaterialKindWater,
+				MaterialKindAcid,
+				MaterialKindFire,
+			},
+			notInAny: []MaterialKind{MaterialKindStone, MaterialKindSand},
+		},
+	}
+
+	for _, tc := range cases {
+		for _, k := range tc.in {
+			if !k.IsIn(tc.set) {
+				t.Fatalf("%s: expected %d to be in set", tc.name, k)
+			}
+		}
+		for _, k := range tc.notInAny {
+			if k.IsIn(tc.set) {
+				t.Fatalf("%s: did not expect %d to be in set", tc.name, k)
+			}
+		}
 	}
 }

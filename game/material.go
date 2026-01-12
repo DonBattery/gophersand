@@ -1,237 +1,373 @@
+// material.go
 package game
 
-import "math/rand"
+/*
+Material is a 16-bit packed value containing all information about one cell (pixel).
 
-// Material is a 32-bit value encoding type, kind flags, and data
-// Layout:
-//   Byte 0 (bits 0-7):   Material Type (256 possible materials)
-//   Byte 1 (bits 8-15):  Material Kind Flags (8 category flags)
-//   Bytes 2-3 (bits 16-31): Material Data (for state machines)
-type Material uint32
+Layout (LSB -> MSB):
 
-type MaterialType byte
-type MaterialKindFlag uint32
-type MaterialKindFilter uint32
+	bits 0..3   : MaterialKind (0..15)
+	bits 4..5   : MaterialLife (0..3)
+	bits 6..7   : MaterialStatus (0..3)  0=Normal,1=Burned,2=Acidic,3=Frozen
+	bits 8..15  : Material-specific state (8 bits)
 
-// Bit layout constants
+State-byte canonical map (bits 8..15):
+
+	bit 8  : FaceLeft
+	bit 9  : FaceUp
+	bit 10 : FlagA
+	bit 11 : FlagB
+	bit 12 : FlagC
+	bit 13 : FlagD
+	bit 14 : FlagE
+	bit 15 : FlagF
+*/
+type Material uint16
+
+// All the 16 Materials (base value == kind)
 const (
-	MaterialTypeMask  uint32 = 0xFF       // Bits 0-7
-	MaterialKindMask  uint32 = 0xFF00     // Bits 8-15
-	MaterialDataMask  uint32 = 0xFFFF0000 // Bits 16-31
-	MaterialKindShift        = 8
-	MaterialDataShift        = 16
+	MaterialEmpty Material = iota
+	MaterialStone
+	MaterialSand
+	MaterialWater
+	MaterialSeed
+	MaterialAnt
+	MaterialWasp
+	MaterialAcid
+	MaterialFire
+	MaterialIce
+	MaterialSmoke
+	MaterialSteam
+	MaterialRoot
+	MaterialPlant
+	MaterialFlower
+	MaterialAntHill
 )
 
-// Material types (byte values)
+// MaterialKind is a 4-bit number representing the 16 Material Kinds (including EmptyKind==0).
+type MaterialKind uint8
+
+// All the 16 MaterialKinds
 const (
-	TypeEmpty MaterialType = 0
-	TypeStone MaterialType = 1
-	TypeSand  MaterialType = 2
-	TypeWater MaterialType = 3
-	TypeSmoke MaterialType = 4
+	MaterialKindEmpty MaterialKind = iota
+	MaterialKindStone
+	MaterialKindSand
+	MaterialKindWater
+	MaterialKindSeed
+	MaterialKindAnt
+	MaterialKindWasp
+	MaterialKindAcid
+	MaterialKindFire
+	MaterialKindIce
+	MaterialKindSmoke
+	MaterialKindSteam
+	MaterialKindRoot
+	MaterialKindPlant
+	MaterialKindFlower
+	MaterialKindAntHill
 )
 
-// Material kind flags (bit positions in the kind byte)
 const (
-	KindStatic MaterialKindFlag = 1 << (MaterialKindShift + 0)
-	KindSolid  MaterialKindFlag = 1 << (MaterialKindShift + 1)
-	KindLiquid MaterialKindFlag = 1 << (MaterialKindShift + 2)
-	KindGas    MaterialKindFlag = 1 << (MaterialKindShift + 3)
-	// Can add up to 4 more flags (bits 12-15)
+	MaterialStatusNormal uint8 = iota
+	MaterialStatusBurned
+	MaterialStatusAcidic
+	MaterialStatusFrozen
 )
 
-// Predefined materials
+// Bit shifting constants and masks
+const (
+	// Core fields
+	kindMask   Material = 0x000F // bits 0..3
+	lifeMask   Material = 0x0030 // bits 4..5
+	statusMask Material = 0x00C0 // bits 6..7
+
+	lifeShift   = 4
+	statusShift = 6
+	dataShift   = 8 // start of state byte
+
+	// Canonical state-byte bits (8..15)
+	stateFaceLeft Material = 1 << 8
+	stateFaceUp   Material = 1 << 9
+	stateFlagA    Material = 1 << 10
+	stateFlagB    Material = 1 << 11
+	stateFlagC    Material = 1 << 12
+	stateFlagD    Material = 1 << 13
+	stateFlagE    Material = 1 << 14
+	stateFlagF    Material = 1 << 15
+
+	// Per-kind aliases (reused bits across kinds)
+	// FlagA: “generic kind-flag” reused for Sand/Stone/IsTopPetal/etc.
+	isPenetrableBit Material = stateFlagA // Sand/Stone/Plant (unified)
+
+	// Plant must NOT share this with IsPenetrable, because Plant uses both.
+	canBloomBit Material = stateFlagD // Plant (moved off FlagA)
+
+	// Flower can keep FlagA (or move it too if you ever need penetrable on Flower)
+	isTopPetalBit Material = stateFlagA // Flower
+
+	// Wasp collection flags
+	waspHasWaterBit Material = stateFlagB
+	waspHasAntBit   Material = stateFlagC
+)
+
+// MaterialKindSet is a 16-bit bit-field. Each bit indicates if the corresponding MaterialKind is part of the set.
+type MaterialKindSet uint16
+
 var (
-	MaterialEmpty = NewMaterial(TypeEmpty)
-	MaterialStone = NewMaterial(TypeStone, KindStatic, KindSolid)
-	MaterialSand  = NewMaterial(TypeSand, KindSolid)
-	MaterialWater = NewMaterial(TypeWater, KindLiquid)
-	MaterialSmoke = NewMaterial(TypeSmoke, KindGas)
+	// Materials which can be penetrated by Root growth.
+	// Note: Sand/Stone/Plant are handled specially in reactions (checks IsPenetrable flag).
+	RootGrowableKinds = NewMaterialKindSet(
+		MaterialKindAntHill,
+		MaterialKindEmpty,
+		MaterialKindSteam,
+		MaterialKindSmoke,
+		MaterialKindPlant,
+	)
+
+	// Materials which can be overwritten by Plant growth
+	PlantGrowableKinds = NewMaterialKindSet(
+		MaterialKindEmpty,
+		MaterialKindAntHill,
+		MaterialKindSteam,
+		MaterialKindSmoke,
+		MaterialKindRoot,
+	)
+
+	PlantSupporterKinds = NewMaterialKindSet(
+		MaterialKindStone,
+		MaterialKindSand,
+		MaterialKindSeed,
+		MaterialKindRoot,
+		MaterialKindPlant,
+		MaterialKindFlower,
+	)
+
+	// Materials an Ant can "grip" to avoid falling when adjacent.
+	AntSupporterKinds = NewMaterialKindSet(
+		MaterialKindStone,
+		MaterialKindSand,
+		MaterialKindSeed,
+		MaterialKindAntHill,
+		MaterialKindRoot,
+		MaterialKindPlant,
+		MaterialKindFlower,
+		MaterialKindAnt,
+	)
+
+	AntAliveKinds = NewMaterialKindSet(
+		MaterialKindSeed,
+		MaterialKindRoot,
+		MaterialKindPlant,
+		MaterialKindFlower,
+		MaterialKindAntHill,
+	)
+
+	// Materials an Ant is allowed to lay eggs into (eggs are represented as Ant with Life==0).
+	AntEggLayableKinds = NewMaterialKindSet(
+		MaterialKindEmpty,
+		MaterialKindAntHill,
+		MaterialKindSteam,
+		MaterialKindSmoke,
+		MaterialKindRoot,
+		MaterialKindPlant,
+		MaterialKindFlower,
+	)
+
+	// Materials an Ant can fall through when unsupported (gravity simulation).
+	AntFallableKinds = NewMaterialKindSet(
+		MaterialKindEmpty,
+		MaterialKindSteam,
+		MaterialKindSmoke,
+		MaterialKindFire,
+		MaterialKindWater,
+		MaterialKindAcid,
+	)
+
+	// Materials Wasp eggs (Wasp with Life==0) can stick to (sideways or when hanging under them).
+	WaspEggStickyKinds = NewMaterialKindSet(
+		MaterialKindStone,
+		MaterialKindSand,
+		MaterialKindSeed,
+		MaterialKindRoot,
+		MaterialKindPlant,
+		MaterialKindFlower,
+	)
+
+	// Materials a Wasp is allowed to lay eggs into (eggs are represented as Wasp with Life==0).
+	WaspEggLayableKinds = NewMaterialKindSet(
+		MaterialKindEmpty,
+		MaterialKindAntHill,
+		MaterialKindSteam,
+		MaterialKindSmoke,
+		MaterialKindPlant,
+	)
+
+	// Materials Ice can Freeze.
+	FreezableKinds = NewMaterialKindSet(
+		MaterialKindEmpty,
+		MaterialKindSteam,
+		MaterialKindSmoke,
+		MaterialKindPlant,
+	)
+
+	// Materials that can be "eaten" by plants (they are not destroyed)
+	PlantFoodKinds = NewMaterialKindSet(
+		MaterialKindWater,
+		MaterialKindSand,
+	)
+
+	// Steam cannot condense into Water below these Materials
+	NonCondensableKinds = NewMaterialKindSet(
+		MaterialKindEmpty,
+		MaterialKindSteam,
+		MaterialKindSmoke,
+		MaterialKindWater,
+		MaterialKindAcid,
+		MaterialKindFire,
+	)
 )
 
-// Predefined filters
-var (
-	StaticMaterials     = NewMaterialKindFilter(KindStatic)
-	SolidMaterials      = NewMaterialKindFilter(KindSolid)
-	LiquidMaterials     = NewMaterialKindFilter(KindLiquid)
-	GasMaterials        = NewMaterialKindFilter(KindGas)
-	PenetrableMaterials = NewMaterialKindFilter(KindLiquid, KindGas)
-)
-
-// Material names and colors
-var (
-	MaterialNames = map[MaterialType]string{
-		TypeEmpty: "Empty",
-		TypeStone: "Stone",
-		TypeSand:  "Sand",
-		TypeWater: "Water",
-		TypeSmoke: "Smoke",
+// NewMaterialKindSet creates a MaterialKindSet from a list of MaterialKind by setting the corresponding bits to 1.
+func NewMaterialKindSet(kinds ...MaterialKind) MaterialKindSet {
+	var set MaterialKindSet
+	for _, k := range kinds {
+		set |= (MaterialKindSet(1) << k)
 	}
+	return set
+}
 
-	MaterialColors = map[MaterialType]Color{
-		TypeEmpty: ColorNull,
-		TypeStone: ColorGray,
-		TypeSand:  ColorLighterYellow,
-		TypeWater: ColorLighterBlue,
-		TypeSmoke: ColorWhite,
+// IsIn returns true if the material kind is in the given MaterialKindSet.
+func (mk MaterialKind) IsIn(set MaterialKindSet) bool {
+	return (set & (MaterialKindSet(1) << mk)) != 0
+}
+
+// GetKind returns the Kind of the material.
+func (m Material) GetKind() MaterialKind {
+	return MaterialKind(m & kindMask)
+}
+
+// IsKind returns true if the material is of the given Kind.
+func (m Material) IsKind(k MaterialKind) bool {
+	return m.GetKind() == k
+}
+
+// IsIn returns true if the Material's Kind is in the given MaterialKindSet.
+func (m Material) IsIn(set MaterialKindSet) bool {
+	return m.GetKind().IsIn(set)
+}
+
+// GetLife returns the Life of the material.
+func (m Material) GetLife() uint8 {
+	return uint8((m & lifeMask) >> lifeShift)
+}
+
+// WithLife sets the Life of the material and returns the new material.
+func (m Material) WithLife(life uint8) Material {
+	life &= 3
+	return (m &^ lifeMask) | (Material(life) << lifeShift)
+}
+
+// GetStatus returns the Status of the material.
+func (m Material) GetStatus() uint8 {
+	return uint8((m & statusMask) >> statusShift)
+}
+
+// WithStatus sets the Status of the material and returns the new material.
+func (m Material) WithStatus(status uint8) Material {
+	status &= 3
+	return (m &^ statusMask) | (Material(status) << statusShift)
+}
+
+// GetColor returns the display color of this material based on its kind, status, and life.
+// Index formula: kind*16 + status*4 + life.
+func (m Material) GetColor() Color {
+	return MaterialColors[int(m.GetKind())*16+int(m.GetStatus())*4+int(m.GetLife())]
+}
+
+// -----------------------------------------------------------------------------
+// Shared direction bits (preferred movement / intent bits)
+// -----------------------------------------------------------------------------
+
+// FaceLeft at state bit 8.
+func (m Material) GetFaceLeft() bool {
+	return (m & stateFaceLeft) != 0
+}
+func (m Material) WithFaceLeft(on bool) Material {
+	if on {
+		return m | stateFaceLeft
 	}
-)
-
-// MaterialDataField defines a range of bits in the data portion
-type MaterialDataField struct {
-	Pos int // Position relative to bit 16 (start of data section)
-	Len int // Length in bits
+	return m &^ stateFaceLeft
 }
 
-// Common data fields
-var (
-	DirectionData = MaterialDataField{Pos: 0, Len: 1}
-)
-
-// Constructor functions
-func NewMaterial(t MaterialType, flags ...MaterialKindFlag) Material {
-	m := Material(t)
-	for _, f := range flags {
-		m |= Material(f)
+// FaceUp at state bit 9.
+// Intended for Ant/Wasp “vertical desire” (up vs down). Can be reused elsewhere if needed.
+func (m Material) GetFaceUp() bool {
+	return (m & stateFaceUp) != 0
+}
+func (m Material) WithFaceUp(on bool) Material {
+	if on {
+		return m | stateFaceUp
 	}
-	return m
+	return m &^ stateFaceUp
 }
 
-func NewMaterialKindFilter(flags ...MaterialKindFlag) MaterialKindFilter {
-	var f MaterialKindFilter
-	for _, flag := range flags {
-		f |= MaterialKindFilter(flag)
+// -----------------------------------------------------------------------------
+// Plant / Flower / Sand+Stone state helpers (bit-reused per kind)
+// -----------------------------------------------------------------------------
+
+// CanBloom at state FlagA - indicates if a Plant can bloom into flowers.
+func (m Material) GetCanBloom() bool {
+	return (m & canBloomBit) != 0
+}
+func (m Material) WithCanBloom(on bool) Material {
+	if on {
+		return m | canBloomBit
 	}
-	return f
+	return m &^ canBloomBit
 }
 
-// Type and Kind component methods
-
-// GetType returns the material type (first byte)
-func (m Material) GetType() byte {
-	return byte(uint32(m) & MaterialTypeMask)
+// IsTopPetal at state FlagA - indicates if this Flower is the top petal that can drop seeds.
+func (m Material) GetIsTopPetal() bool {
+	return (m & isTopPetalBit) != 0
 }
-
-// IsType checks if the material matches the given type
-func (m Material) IsType(t MaterialType) bool {
-	return m.GetType() == byte(t)
-}
-
-// FilterAny returns true if any flags from the filter are set
-func (m Material) FilterAny(filter MaterialKindFilter) bool {
-	if filter == 0 {
-		return true // Empty filter matches everything
+func (m Material) WithIsTopPetal(on bool) Material {
+	if on {
+		return m | isTopPetalBit
 	}
-	return (uint32(m) & uint32(filter)) != 0
+	return m &^ isTopPetalBit
 }
 
-// FilterAll returns true if all flags from the filter are set
-func (m Material) FilterAll(filter MaterialKindFilter) bool {
-	return (uint32(m) & uint32(filter)) == uint32(filter)
+// IsPenetrable at state FlagA - indicates if this Sand/Stone/Plant can be penetrated by Root growth.
+func (m Material) GetIsPenetrable() bool {
+	return (m & isPenetrableBit) != 0
 }
-
-// FilterNone returns true if none of the flags from the filter are set
-func (m Material) FilterNone(filter MaterialKindFilter) bool {
-	return (uint32(m) & uint32(filter)) == 0
-}
-
-// Data component methods (operate on bits 16-31)
-
-// Get returns true if the n-th bit in the data section is set (0-15)
-func (m Material) Get(n int) bool {
-	return (m & (1 << (MaterialDataShift + n))) != 0
-}
-
-// Set returns a new Material with the n-th data bit set to 1
-func (m Material) Set(n int) Material {
-	return m | (1 << (MaterialDataShift + n))
-}
-
-// Unset returns a new Material with the n-th data bit set to 0
-func (m Material) Unset(n int) Material {
-	return m &^ (1 << (MaterialDataShift + n))
-}
-
-// SetBool returns a new Material with the n-th data bit set to val
-func (m Material) SetBool(n int, val bool) Material {
-	if val {
-		return m.Set(n)
+func (m Material) WithIsPenetrable(on bool) Material {
+	if on {
+		return m | isPenetrableBit
 	}
-	return m.Unset(n)
+	return m &^ isPenetrableBit
 }
 
-// GetInt returns the integer value of i bits starting from bit n in the data section
-func (m Material) GetInt(n, i int) int {
-	mask := (uint32(1) << i) - 1
-	return int((uint32(m) >> (MaterialDataShift + n)) & mask)
+// -----------------------------------------------------------------------------
+// Wasp-specific state helpers (collection flags)
+// -----------------------------------------------------------------------------
+
+func (m Material) GetWaspHasWater() bool {
+	return (m & waspHasWaterBit) != 0
+}
+func (m Material) WithWaspHasWater(on bool) Material {
+	if on {
+		return m | waspHasWaterBit
+	}
+	return m &^ waspHasWaterBit
 }
 
-// SetInt returns a new Material with val written using i bits starting at bit n in the data section
-func (m Material) SetInt(n, i, val int) Material {
-	shift := MaterialDataShift + n
-	mask := ((uint32(1) << i) - 1) << shift
-	return Material((uint32(m) &^ mask) | ((uint32(val) << shift) & mask))
+func (m Material) GetWaspHasAnt() bool {
+	return (m & waspHasAntBit) != 0
 }
-
-// GetField returns the integer value of the MaterialDataField
-func (m Material) GetField(field MaterialDataField) int {
-	return m.GetInt(field.Pos, field.Len)
-}
-
-// SetField returns a new Material with val written to the MaterialDataField
-func (m Material) SetField(field MaterialDataField, val int) Material {
-	return m.SetInt(field.Pos, field.Len, val)
-}
-
-// RandomField returns a new Material with a random value in the MaterialDataField
-func (m Material) RandomField(field MaterialDataField) Material {
-	return m.SetInt(field.Pos, field.Len, rand.Intn(1<<field.Len))
-}
-
-// Convenience methods
-
-func (m Material) IsEmpty() bool {
-	return m.IsType(TypeEmpty)
-}
-
-func (m Material) IsStatic() bool {
-	return m.FilterAny(StaticMaterials)
-}
-
-func (m Material) IsSolid() bool {
-	return m.FilterAny(SolidMaterials)
-}
-
-func (m Material) IsLiquid() bool {
-	return m.FilterAny(LiquidMaterials)
-}
-
-func (m Material) IsGas() bool {
-	return m.FilterAny(GasMaterials)
-}
-
-func (m Material) IsPenetrable() bool {
-	return m.IsEmpty() || m.FilterAny(PenetrableMaterials)
-}
-
-func (m Material) IsFlowable() bool {
-	return m.IsEmpty() || m.IsGas()
-}
-
-func (m Material) String() string {
-	return MaterialNames[MaterialType(m.GetType())]
-}
-
-func (m Material) Color() Color {
-	return MaterialColors[MaterialType(m.GetType())]
-}
-
-// Domain-specific data helpers
-
-func (m Material) RandomDirection() Material {
-	return m.RandomField(DirectionData)
-}
-
-func (m Material) FaceLeft() bool {
-	return m.Get(DirectionData.Pos)
+func (m Material) WithWaspHasAnt(on bool) Material {
+	if on {
+		return m | waspHasAntBit
+	}
+	return m &^ waspHasAntBit
 }
