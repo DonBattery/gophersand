@@ -1,6 +1,13 @@
 // utils.go provides general utility functions
 package game
 
+import (
+	"image/color"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
+)
+
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -90,45 +97,29 @@ func clampf(val, mi, ma float32) float32 {
 	return minf(maxf(val, mi), ma)
 }
 
-func ray(v1, v2 *Vector) []int {
-	pts := []int{}
+func lerpf(from, to float32, t float64) float32 {
+	return float32(float64(from) + (float64(to-from) * t))
+}
 
-	x1, y1 := int(v1.X), int(v1.Y)
-	x2, y2 := int(v2.X), int(v2.Y)
-	dx := abs(x1 - x2)
-	dy := abs(y1 - y2)
+func Line(target *ebiten.Image, x1, y1, x2, y2 int, c color.Color) {
+	vector.StrokeLine(target, float32(x1), float32(y1), float32(x2), float32(y2), 1, c, false)
+}
 
-	sx := -1
-	if x1 < x2 {
-		sx = 1
+func Rect(target *ebiten.Image, x, y, w, h int, c color.Color) {
+	if w < 1 || h < 1 {
+		return
 	}
 
-	sy := -1
-	if y1 < y2 {
-		sy = 1
+	Line(target, x, y, x+w-1, y, c)
+	Line(target, x, y+h-1, x+w-1, y+h-1, c)
+	Line(target, x, y, x, y+h-1, c)
+	Line(target, x+w-1, y, x+w-1, y+h-1, c)
+}
+
+func Circle(target *ebiten.Image, x, y, r int, c color.Color) {
+	if r <= 1 {
+		target.Set(x, y, c)
+		return
 	}
-
-	err := dx - dy
-
-	for {
-		pts = append(pts, x1, y1)
-
-		if x1 == x2 && y1 == y2 {
-			break
-		}
-
-		e2 := err * 2
-
-		if e2 > -dy {
-			err -= dy
-			x1 += sx
-		}
-
-		if e2 < dx {
-			err += dx
-			y1 += sy
-		}
-	}
-
-	return pts
+	vector.StrokeCircle(target, float32(x), float32(y), float32(r), 1, c, false)
 }

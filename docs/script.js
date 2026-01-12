@@ -1,945 +1,1111 @@
-const spriteData = {
-    "Empty": {
-        "inactive_sprite": {
-            "x": 0,
-            "y": 0,
-            "w": 24,
-            "h": 24
+const SMALL_FULL_THRESHOLD = 1.5;
+const SPRITE_SHEET_WIDTH = 190;
+const SPRITE_SHEET_HEIGHT = 190;
+const SPRITE_SIZE = 26;
+
+const SPRITE_SHEET_DATA = {
+    Empty: {
+        Inactive: {
+            x: 1,
+            y: 1,
         },
-        "active_sprite": {
-            "x": 24,
-            "y": 0,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 28,
+            y: 1,
         }
     },
-    "Stone": {
-        "inactive_sprite": {
-            "x": 48,
-            "y": 0,
-            "w": 24,
-            "h": 24
+    Stone: {
+        Inactive: {
+            x: 55,
+            y: 1,
         },
-        "active_sprite": {
-            "x": 72,
-            "y": 0,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 82,
+            y: 1,
         }
     },
-    "Wood": {
-        "inactive_sprite": {
-            "x": 96,
-            "y": 0,
-            "w": 24,
-            "h": 24
+    Sand: {
+        Inactive: {
+            x: 109,
+            y: 1,
         },
-        "active_sprite": {
-            "x": 120,
-            "y": 0,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 136,
+            y: 1,
         }
     },
-    "Sand": {
-        "inactive_sprite": {
-            "x": 144,
-            "y": 0,
-            "w": 24,
-            "h": 24
+    Water: {
+        Inactive: {
+            x: 163,
+            y: 1,
         },
-        "active_sprite": {
-            "x": 168,
-            "y": 0,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 1,
+            y: 28,
         }
     },
-    "Water": {
-        "inactive_sprite": {
-            "x": 192,
-            "y": 0,
-            "w": 24,
-            "h": 24
+    Seed: {
+        Inactive: {
+            x: 28,
+            y: 28,
         },
-        "active_sprite": {
-            "x": 216,
-            "y": 0,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 55,
+            y: 28,
         }
     },
-    "Seed": {
-        "inactive_sprite": {
-            "x": 0,
-            "y": 24,
-            "w": 24,
-            "h": 24
+    Ant: {
+        Inactive: {
+            x: 82,
+            y: 28,
         },
-        "active_sprite": {
-            "x": 24,
-            "y": 24,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 109,
+            y: 28,
         }
     },
-    "Ant": {
-        "inactive_sprite": {
-            "x": 48,
-            "y": 24,
-            "w": 24,
-            "h": 24
+    Wasp: {
+        Inactive: {
+            x: 136,
+            y: 28,
         },
-        "active_sprite": {
-            "x": 72,
-            "y": 24,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 163,
+            y: 28,
         }
     },
-    "Acid": {
-        "inactive_sprite": {
-            "x": 96,
-            "y": 24,
-            "w": 24,
-            "h": 24
+    Acid: {
+        Inactive: {
+            x: 1,
+            y: 55,
         },
-        "active_sprite": {
-            "x": 120,
-            "y": 24,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 28,
+            y: 55,
         }
     },
-    "Fire": {
-        "inactive_sprite": {
-            "x": 144,
-            "y": 24,
-            "w": 24,
-            "h": 24
+    Fire: {
+        Inactive: {
+            x: 55,
+            y: 55,
         },
-        "active_sprite": {
-            "x": 168,
-            "y": 24,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 82,
+            y: 55,
         }
     },
-    "Ice": {
-        "inactive_sprite": {
-            "x": 192,
-            "y": 24,
-            "w": 24,
-            "h": 24
+    Ice: {
+        Inactive: {
+            x: 109,
+            y: 55,
         },
-        "active_sprite": {
-            "x": 216,
-            "y": 24,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 136,
+            y: 55,
         }
     },
-    "Start": {
-        "inactive_sprite": {
-            "x": 0,
-            "y": 48,
-            "w": 24,
-            "h": 24
+    Start: {
+        Inactive: {
+            x: 163,
+            y: 55,
         },
-        "active_sprite": {
-            "x": 24,
-            "y": 48,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 1,
+            y: 82,
         }
     },
-    "Stop": {
-        "inactive_sprite": {
-            "x": 48,
-            "y": 48,
-            "w": 24,
-            "h": 24
+    Stop: {
+        Inactive: {
+            x: 28,
+            y: 82,
         },
-        "active_sprite": {
-            "x": 72,
-            "y": 48,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 55,
+            y: 82,
         }
     },
-    "Erase": {
-        "inactive_sprite": {
-            "x": 96,
-            "y": 48,
-            "w": 24,
-            "h": 24
+    Erase: {
+        Inactive: {
+            x: 82,
+            y: 82,
         },
-        "active_sprite": {
-            "x": 120,
-            "y": 48,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 109,
+            y: 82,
         }
     },
-    "Gen": {
-        "inactive_sprite": {
-            "x": 144,
-            "y": 48,
-            "w": 24,
-            "h": 24
+    Gen: {
+        Inactive: {
+            x: 136,
+            y: 82,
         },
-        "active_sprite": {
-            "x": 168,
-            "y": 48,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 163,
+            y: 82,
         }
     },
-    "SizePlus": {
-        "inactive_sprite": {
-            "x": 192,
-            "y": 48,
-            "w": 24,
-            "h": 24
+    Size1: {
+        Inactive: {
+            x: 1,
+            y: 109,
         },
-        "active_sprite": {
-            "x": 216,
-            "y": 48,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 28,
+            y: 109,
         }
     },
-    "SizeMinus": {
-        "inactive_sprite": {
-            "x": 0,
-            "y": 72,
-            "w": 24,
-            "h": 24
+    Size2: {
+        Inactive: {
+            x: 55,
+            y: 109,
         },
-        "active_sprite": {
-            "x": 24,
-            "y": 72,
-            "w": 24,
-            "h": 24
+        Active: {
+            x: 82,
+            y: 109,
         }
     },
-    GitHub: {
-        "inactive_sprite": {
-            "x": 48,
-            "y": 81,
-            "w": 41,
-            "h": 15
+    Size3: {
+        Inactive: {
+            x: 109,
+            y: 109,
         },
-        "active_sprite": {
-            "x": 48,
-            "y": 96,
-            "w": 41,
-            "h": 15
+        Active: {
+            x: 136,
+            y: 109,
         }
     },
-    Title: {
-        "inactive_sprite": {
-            "x": 48,
-            "y": 72,
-            "w": 50,
-            "h": 9
+    Size4: {
+        Inactive: {
+            x: 163,
+            y: 109,
         },
-        "active_sprite": {
-            "x": 98,
-            "y": 72,
-            "w": 50,
-            "h": 9
+        Active: {
+            x: 1,
+            y: 136,
+        }
+    },
+    Size5: {
+        Inactive: {
+            x: 28,
+            y: 136,
+        },
+        Active: {
+            x: 55,
+            y: 136,
+        }
+    },
+    Menu: {
+        Inactive: {
+            x: 82,
+            y: 136,
+        },
+        Active: {
+            x: 109,
+            y: 136,
+        }
+    },
+    Info: {
+        Inactive: {
+            x: 109,
+            y: 136,
+        },
+        Active: {
+            x: 136,
+            y: 136,
+        }
+    },
+    Options: {
+        Inactive: {
+            x: 163,
+            y: 136,
+        },
+        Active: {
+            x: 1,
+            y: 163,
         }
     }
 };
 
-// Sprite sheet dimensions in pixels
-const SPRITE_SHEET_WIDTH = 240;
-const SPRITE_SHEET_HEIGHT = 120;
-
-/**
- * Sprite-backed button using regions from a shared sprite sheet.
- */
-class SpriteButton {
-    /**
-     * @param {Object} options
-     * @param {string} options.spriteSheetUrl - URL/path to the sprite sheet image.
-     * @param {Object} options.inactiveSprite - { x, y, w, h } for inactive state.
-     * @param {Object} options.activeSprite - { x, y, w, h } for active state.
-     * @param {Function} [options.onClick] - Callback invoked on click: (event, buttonInstance).
-     * @param {number} [options.scale=1] - Optional scale factor for button size.
-     * @param {number} [options.sheetWidth=SPRITE_SHEET_WIDTH] - Full sprite sheet width.
-     * @param {number} [options.sheetHeight=SPRITE_SHEET_HEIGHT] - Full sprite sheet height.
-     */
-    constructor({ spriteSheetUrl, inactiveSprite, activeSprite, onClick, scale = 1, sheetWidth = SPRITE_SHEET_WIDTH, sheetHeight = SPRITE_SHEET_HEIGHT }) {
-        this.spriteSheetUrl = spriteSheetUrl;
-        this.inactiveSprite = inactiveSprite;
-        this.activeSprite = activeSprite;
-        this.onClick = onClick;
-        this.scale = scale;
-        this.sheetWidth = sheetWidth;
-        this.sheetHeight = sheetHeight;
-        this.isActive = false;
-
-        this.element = document.createElement('button');
-        this.element.type = 'button';
-        this.element.classList.add('sprite-button');
-
-        if (typeof this.onClick === 'function') {
-            this.element.addEventListener('click', (event) => {
-                this.onClick(event, this);
-            });
-        }
-
-        this._applySprite();
-    }
-
-    /**
-     * Apply current sprite (inactive/active) to the button element.
-     * Keeps the sprite's intrinsic aspect ratio, scaled by this.scale.
-     * @private
-     */
-    _applySprite() {
-        const frame = this.isActive ? this.activeSprite : this.inactiveSprite;
-        if (!frame) {
-            return;
-        }
-
-        const width = frame.w * this.scale;
-        const height = frame.h * this.scale;
-
-        this.element.style.width = `${width}px`;
-        this.element.style.height = `${height}px`;
-        this.element.style.backgroundImage = `url(${this.spriteSheetUrl})`;
-        this.element.style.backgroundRepeat = 'no-repeat';
-        // Scale the whole sprite sheet so the selected frame fills the button
-        this.element.style.backgroundSize = `${this.sheetWidth * this.scale}px ${this.sheetHeight * this.scale}px`;
-        this.element.style.backgroundPosition = `-${frame.x * this.scale}px -${frame.y * this.scale}px`;
-    }
-
-    /**
-     * Set active state explicitly.
-     * @param {boolean} isActive
-     */
-    setActive(isActive) {
-        this.isActive = !!isActive;
-        this._applySprite();
-    }
-
-    /**
-     * Update the scale factor and re-apply sprite.
-     * @param {number} scale
-     */
-    setScale(scale) {
-        this.scale = scale;
-        this._applySprite();
-    }
-
-    /**
-     * Toggle between inactive and active sprites.
-     */
-    toggle() {
-        this.setActive(!this.isActive);
-    }
-
-    /**
-     * Attach the button to a parent DOM element.
-     * @param {HTMLElement} parent
-     * @returns {SpriteButton}
-     */
-    mount(parent) {
-        if (parent && parent.appendChild) {
-            parent.appendChild(this.element);
-        }
-        return this;
+const DIALOG_DATA = {
+    Erase: {
+        Color: "red",
+        Message: "do you really want to erase the world?",
+        YesAnswer: "erase",
+        NoAnswer: "cancel",
+    },
+    Gen: {
+        Color: "green",
+        Message: "do you really want to generate a new world?",
+        YesAnswer: "gen",
+        NoAnswer: "cancel",
     }
 }
 
-// Define the App object
-const App = {
-    // Properties
-    Width: 0,
-    Height: 0,
-    CurrentLayout: '',
-    Buttons: [],
-    FooterButtons: null,
-    BrushButtons: [],
-    CurrentBrushName: 'Sand',
-    IsRunning: false,
-    ActiveModalType: null, // 'erase' | 'gen' | null
-
-    /**
-     * Unified event emitter for communicating with the Go/WASM game.
-     * For now it simply logs the event string.
-     * @param {string} event
-     */
-    sendGameEvent: function (event) {
-        console.log('GAME_EVENT:', event);
-        const frame = document.getElementById('GameFrame');
-        frame.contentWindow.postMessage(
-            { type: "game-cmd", payload: event },
-            "*"
-        );
+const MENU_ITEMS = [
+    {
+        Text: "full screen: off",
+        Action: () => { switchFullscreen(); }
     },
-
-    // Method to handle layout logic
-    autoLayout: function () {
-        const width = $(window).width();
-        const height = $(window).height();
-        const aspectRatio = width / height;
-
-        // Set app properties
-        this.Width = width;
-        this.Height = height;
-
-        // Remove all layout classes from the layout container
-        $('#Layout').removeClass('FullHorizontal SmallHorizontal FullVertical SmallVertical');
-
-        let layoutClass;
-
-        if (width > height) {
-            if (aspectRatio < 1.5) {
-                layoutClass = 'SmallHorizontal';
-            } else {
-                layoutClass = 'FullHorizontal';
-            }
-        } else {
-            const verticalAspectRatio = height / width;
-            if (verticalAspectRatio < 1.5) {
-                layoutClass = 'SmallVertical';
-            } else {
-                layoutClass = 'FullVertical';
-            }
-        }
-
-        // Add the determined layout class
-        $('#Layout').addClass(layoutClass);
-
-        // Set the CurrentLayout property
-        this.CurrentLayout = layoutClass;
-
-        // Redistribute buttons when layout changes (with a small delay to ensure DOM is updated)
-        setTimeout(() => {
-            this.ensureButtons();
-            this.layoutButtons();
-            this.ensureFooterButtons();
-            this.layoutFooter();
-        }, 10);
-    },
-
-    /**
-     * Set the currently active brush button by name.
-     * Only one brush button is active at any time.
-     * @param {string} name
-     */
-    setBrush: function (name) {
-        this.CurrentBrushName = name;
-        (this.BrushButtons || []).forEach((entry) => {
-            const isActive = entry.name === name;
-            entry.button.setActive(isActive);
-        });
-
-        // Notify game about brush selection
-        this.sendGameEvent('brush_select:' + name.toLowerCase());
-    },
-
-    /**
-     * Set the active brush coming from the Go game (keyboard, etc.).
-     * This only updates UI state, it does NOT send a message back to the game
-     * to avoid event echo loops.
-     */
-    setBrushFromGame: function (name) {
-        this.CurrentBrushName = name;
-        (this.BrushButtons || []).forEach((entry) => {
-            const isActive = entry.name === name;
-            entry.button.setActive(isActive);
-        });
-    },
-
-    /**
-     * Ensure the Start/Stop buttons visually reflect the current run state.
-     * Exactly one of them is always active.
-     */
-    ensureRunButtonVisuals: function () {
-        const startEntry = (this.Buttons || []).find((entry) => entry.name === 'Start');
-        const stopEntry = (this.Buttons || []).find((entry) => entry.name === 'Stop');
-        if (!startEntry || !stopEntry) {
-            return;
-        }
-
-        if (this.IsRunning) {
-            startEntry.button.setActive(true);
-            stopEntry.button.setActive(false);
-        } else {
-            startEntry.button.setActive(false);
-            stopEntry.button.setActive(true);
+    {
+        Text: "debug mode: off",
+        Action: () => {
+            DebugMode = !DebugMode;
+            MENU_ITEMS[1].Text = "debug mode: " + (DebugMode ? "on" : "off");
+            sendSiteEventToGame("world:debug:" + (DebugMode ? "on" : "off"));
         }
     },
-
-    /**
-     * Create SpriteButton instances for the 16 main tools if not already created.
-     */
-    ensureButtons: function () {
-        if (this.Buttons && this.Buttons.length) {
-            return;
-        }
-
-        const buttonNames = [
-            'Empty', 'Stone', 'Wood', 'Sand',
-            'Water', 'Seed', 'Ant', 'Acid',
-            'Fire', 'Ice',
-            // right-hand tools in this exact order:
-            // gen, erase, size plus, size minus, start, stop
-            'Gen', 'Erase', 'SizePlus', 'SizeMinus', 'Start', 'Stop'
-        ];
-        const brushNames = [
-            'Empty', 'Stone', 'Wood', 'Sand',
-            'Water', 'Seed', 'Ant', 'Acid',
-            'Fire', 'Ice'
-        ];
-
-        this.BrushButtons = [];
-
-        this.Buttons = buttonNames.map((name) => {
-            const data = spriteData[name];
-            if (!data) {
-                return null;
-            }
-
-            const isBrush = brushNames.includes(name);
-
-            let onClick;
-
-            if (isBrush) {
-                onClick = () => {
-                    this.setBrush(name);
-                };
-            } else if (name === 'Start') {
-                // Start simulation: mark Start active and Stop inactive.
-                onClick = (event, btn) => {
-                    if (this.IsRunning) {
-                        return;
-                    }
-
-                    this.IsRunning = true;
-                    this.sendGameEvent('world:start');
-
-                    // Toggle button visuals (exactly one active)
-                    this.ensureRunButtonVisuals();
-                };
-            } else if (name === 'Stop') {
-                // Stop simulation: mark Stop active and Start inactive.
-                onClick = (event, btn) => {
-                    if (!this.IsRunning) {
-                        return;
-                    }
-
-                    this.IsRunning = false;
-                    this.sendGameEvent('world:stop');
-
-                    // Toggle button visuals (exactly one active)
-                    this.ensureRunButtonVisuals();
-                };
-            } else if (name === 'Erase') {
-                onClick = (event, btn) => {
-                    this.showEraseConfirm();
-                    btn.setActive(true);
-                };
-            } else if (name === 'Gen') {
-                onClick = (event, btn) => {
-                    this.showGenConfirm();
-                    btn.setActive(true);
-                };
-            } else if (name === 'SizePlus') {
-                onClick = (event, btn) => {
-                    this.sendGameEvent('brush_size:plus');
-                    btn.setActive(true);
-                    setTimeout(() => btn.setActive(false), 150);
-                };
-            } else if (name === 'SizeMinus') {
-                onClick = (event, btn) => {
-                    this.sendGameEvent('brush_size:minus');
-                    btn.setActive(true);
-                    setTimeout(() => btn.setActive(false), 150);
-                };
-            } else {
-                onClick = () => {
-                    // Placeholder: hook into other tools later
-                    console.log(name + ' button clicked');
-                };
-            }
-
-            const button = new SpriteButton({
-                spriteSheetUrl: 'sprite_sheet.png',
-                inactiveSprite: data.inactive_sprite,
-                activeSprite: data.active_sprite,
-                sheetWidth: SPRITE_SHEET_WIDTH,
-                sheetHeight: SPRITE_SHEET_HEIGHT,
-                onClick
-            });
-
-            const entry = { name, button };
-            if (isBrush) {
-                this.BrushButtons.push(entry);
-            }
-
-            return entry;
-        }).filter(Boolean);
-
-        // Set default brush selection
-        this.setBrush(this.CurrentBrushName || 'Sand');
-
-        // Default world state: not running, Stop button active, Start inactive.
-        this.IsRunning = false;
-        this.ensureRunButtonVisuals();
-    },
-
-    /**
-     * Create footer SpriteButtons (Title on the left, GitHub on the right).
-     */
-    ensureFooterButtons: function () {
-        if (this.FooterButtons) {
-            return;
-        }
-
-        const footerButtons = {};
-
-        const titleData = spriteData.Title;
-        if (titleData) {
-            footerButtons.title = new SpriteButton({
-                spriteSheetUrl: 'sprite_sheet.png',
-                inactiveSprite: titleData.inactive_sprite,
-                activeSprite: titleData.active_sprite,
-                sheetWidth: SPRITE_SHEET_WIDTH,
-                sheetHeight: SPRITE_SHEET_HEIGHT
-            });
-            footerButtons.title.element.classList.add('title-button');
-        }
-
-        const githubData = spriteData.GitHub;
-        if (githubData) {
-            footerButtons.github = new SpriteButton({
-                spriteSheetUrl: 'sprite_sheet.png',
-                inactiveSprite: githubData.inactive_sprite,
-                activeSprite: githubData.active_sprite,
-                sheetWidth: SPRITE_SHEET_WIDTH,
-                sheetHeight: SPRITE_SHEET_HEIGHT,
-                onClick: () => {
-                    window.open('https://github.com/DonBattery/gophersand', '_blank');
-                }
-            });
-        }
-
-        this.FooterButtons = footerButtons;
-    },
-
-    /**
-     * Position buttons inside a container as a rows x cols grid,
-     * scaling each button to fill its cell while keeping aspect ratio.
-     */
-    _layoutGrid: function (container, buttons, rows, cols) {
-        if (!container || !buttons || !buttons.length) {
-            return;
-        }
-
-        const rect = container.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) {
-            return;
-        }
-
-        // Account for CSS grid gaps so buttons never overflow the page
-        const style = window.getComputedStyle(container);
-        const gapX = parseFloat(style.columnGap || style.gap || '0') || 0;
-        const gapY = parseFloat(style.rowGap || style.gap || '0') || 0;
-
-        const totalGapX = gapX * (cols - 1);
-        const totalGapY = gapY * (rows - 1);
-
-        const cellWidth = (rect.width - totalGapX) / cols;
-        const cellHeight = (rect.height - totalGapY) / rows;
-
-        buttons.forEach((entry) => {
-            const btn = entry.button || entry;
-            const frame = btn.inactiveSprite || btn.activeSprite;
-            if (!frame) {
-                return;
-            }
-
-            const scale = Math.min(cellWidth / frame.w, cellHeight / frame.h);
-            btn.setScale(scale);
-            container.appendChild(btn.element);
-        });
-    },
-
-    /**
-     * Arrange all tool buttons according to the current layout mode.
-     */
-    layoutButtons: function () {
-        const panelA = document.getElementById('PanelA');
-        const panelB = document.getElementById('PanelB');
-
-        [panelA, panelB].forEach((panel) => {
-            if (panel) {
-                panel.innerHTML = '';
-            }
-        });
-
-        const allButtons = (this.Buttons || []).map((entry) => entry.button);
-
-        switch (this.CurrentLayout) {
-            case 'FullVertical':
-                // Single 4x4 grid for all 16 buttons
-                this._layoutGrid(panelA, allButtons.slice(0, 16), 4, 4);
-                break;
-            case 'SmallVertical':
-                // Single 2x8 grid at the bottom
-                this._layoutGrid(panelA, allButtons.slice(0, 16), 2, 8);
-                break;
-            case 'FullHorizontal': {
-                // Left: first 10 buttons (5x2), Right: remaining 6 (5x2, last 4 cells are empty)
-                const leftButtons = allButtons.slice(0, 10);
-                const rightButtons = allButtons.slice(10, 16);
-                this._layoutGrid(panelA, leftButtons, 5, 2);
-                this._layoutGrid(panelB, rightButtons, 5, 2);
-                break;
-            }
-            case 'SmallHorizontal':
-                // Single 8x2 grid on the left
-                this._layoutGrid(panelA, allButtons.slice(0, 16), 8, 2);
-                break;
+    {
+        Text: "auto rotate world: on",
+        Action: () => {
+            AutoRotateWorld = !AutoRotateWorld;
+            MENU_ITEMS[2].Text = "auto rotate world: " + (AutoRotateWorld ? "on" : "off");
         }
     },
-
-    /**
-     * Footer layout: Title on the left and GitHub button on the right
-     */
-    layoutFooter: function () {
-        const footer = document.getElementById('Footer');
-        const panelA = document.getElementById('PanelA');
-        const footerTitle = document.getElementById('FooterTitle');
-        const footerGitHub = document.getElementById('FooterGitHub');
-
-        if (!footer || !this.FooterButtons) {
-            return;
-        }
-
-        if (footerTitle) {
-            footerTitle.innerHTML = '';
-        }
-        if (footerGitHub) {
-            footerGitHub.innerHTML = '';
-        }
-
-        const rect = footer.getBoundingClientRect();
-        if (rect.height === 0) {
-            return;
-        }
-
-        const availableHeight = rect.height - 4; // small padding
-
-        // In FullVertical mode, keep the title button's width aligned
-        // with the button panel (PanelA) width so it never "sticks out"
-        // under the game area on very small screens.
-        let maxTitleWidth = null;
-        if (this.CurrentLayout === 'FullVertical' && panelA) {
-            const panelRect = panelA.getBoundingClientRect();
-            if (panelRect.width > 0) {
-                maxTitleWidth = panelRect.width;
-            }
-        }
-
-        const { title, github } = this.FooterButtons;
-
-        if (title && footerTitle) {
-            const frame = title.inactiveSprite || title.activeSprite;
-            if (frame) {
-                const heightScale = availableHeight / frame.h;
-                let scale = heightScale;
-
-                if (maxTitleWidth != null) {
-                    const widthScale = maxTitleWidth / frame.w;
-                    scale = Math.min(heightScale, widthScale);
-                }
-
-                title.setScale(scale);
-            }
-            title.mount(footerTitle);
-        }
-
-        if (github && footerGitHub) {
-            const frame = github.inactiveSprite || github.activeSprite;
-            if (frame) {
-                const scale = availableHeight / frame.h;
-                github.setScale(scale);
-            }
-            github.mount(footerGitHub);
+    {
+        Text: "rotate the world CW",
+        Action: () => {
+            sendSiteEventToGame("world:rotate_cw");
         }
     },
-
-    /**
-     * Internal helper to show a confirmation dialog inside the GameWindow.
-     * Any subsequent click on the page counts as an answer:
-     * - click on the primary button => actual action (erase/gen)
-     * - click anywhere else => treated as 'no'
-     * @param {'erase'|'gen'} type
-     */
-    showConfirmDialog: function (type) {
-        const overlay = document.getElementById('ConfirmOverlay');
-        const dialog = document.getElementById('ConfirmDialog');
-        const textEl = document.getElementById('ConfirmText');
-        const primaryBtn = document.getElementById('ConfirmPrimary');
-        const cancelBtn = document.getElementById('ConfirmCancel');
-        const gameWindow = document.getElementById('GameWindow');
-
-        if (!overlay || !dialog || !textEl || !primaryBtn || !cancelBtn || !gameWindow) {
-            return;
+    {
+        Text: "rotate the world CCW",
+        Action: () => {
+            sendSiteEventToGame("world:rotate_ccw");
         }
-
-        // If a modal is already active, ignore additional requests
-        if (this.ActiveModalType) {
-            return;
-        }
-        this.ActiveModalType = type;
-
-        const rect = gameWindow.getBoundingClientRect();
-        const dialogWidth = Math.max(0, rect.width - 10);
-        const dialogHeight = (2 / 3) * rect.height;
-
-        dialog.style.width = `${dialogWidth}px`;
-        dialog.style.height = `${dialogHeight}px`;
-
-        // Scale font relative to dialog size
-        const baseSize = Math.min(dialogHeight / 6, dialogWidth / 18);
-        const fontSize = Math.max(8, Math.min(18, baseSize));
-        dialog.style.fontSize = `${fontSize}px`;
-
-        // Configure text and primary button appearance
-        primaryBtn.classList.remove('confirm-primary-erase', 'confirm-primary-gen');
-
-        if (type === 'erase') {
-            textEl.textContent = 'do you really want to erase the current state, and start a new empty world?';
-            primaryBtn.textContent = 'erase';
-            primaryBtn.classList.add('confirm-primary-erase');
-        } else if (type === 'gen') {
-            textEl.textContent = 'do you really want to generate a new world?';
-            primaryBtn.textContent = 'gen';
-            primaryBtn.classList.add('confirm-primary-gen');
-        }
-
-        cancelBtn.textContent = 'no';
-
-        // Highlight the corresponding tool button while the dialog is open
-        const toolName = type === 'erase' ? 'Erase' : 'Gen';
-        const toolEntry = (this.Buttons || []).find((entry) => entry.name === toolName);
-        if (toolEntry) {
-            toolEntry.button.setActive(true);
-        }
-
-        overlay.classList.add('visible');
-
-        // Any subsequent click on the document counts as a response.
-        // Attach after a tick so we don't catch the opening click.
-        setTimeout(() => {
-            const handler = (event) => {
-                const primary = document.getElementById('ConfirmPrimary');
-                const isPrimary = primary && primary.contains(event.target);
-                const activeType = this.ActiveModalType;
-
-                if (isPrimary && activeType === 'erase') {
-                    this.sendGameEvent('world:erase');
-                } else if (isPrimary && activeType === 'gen') {
-                    this.sendGameEvent('world:gen');
-                }
-
-                this.hideConfirm();
-
-                event.stopPropagation();
-                event.preventDefault();
-            };
-
-            document.addEventListener('click', handler, { capture: true, once: true });
-        }, 0);
     },
-
-    /**
-     * Show erase confirmation popup.
-     */
-    showEraseConfirm: function () {
-        this.showConfirmDialog('erase');
-    },
-
-    /**
-     * Show generate confirmation popup.
-     */
-    showGenConfirm: function () {
-        this.showConfirmDialog('gen');
-    },
-
-    /**
-     * Hide any confirmation popup.
-     */
-    hideConfirm: function () {
-        const overlay = document.getElementById('ConfirmOverlay');
-        if (overlay) {
-            overlay.classList.remove('visible');
+    {
+        Text: "flip the world",
+        Action: () => {
+            sendSiteEventToGame("world:rotate_cw");
+            sendSiteEventToGame("world:rotate_cw");
         }
-
-        // Reset tool button highlight
-        if (this.ActiveModalType === 'erase' || this.ActiveModalType === 'gen') {
-            const toolName = this.ActiveModalType === 'erase' ? 'Erase' : 'Gen';
-            const toolEntry = (this.Buttons || []).find((entry) => entry.name === toolName);
-            if (toolEntry) {
-                toolEntry.button.setActive(false);
-            }
-        }
-
-        this.ActiveModalType = null;
     },
+];
 
-    // Initialize method to set up event listeners
-    initialize: async function () {
+const Buttons = {
+    Empty: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Empty],
+        ButtonAction: () => { setActiveBrush("Empty"); },
+    },
+    Stone: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Stone],
+        ButtonAction: () => { setActiveBrush("Stone"); },
+    },
+    Sand: {
+        ButtonType: "Brush",
+        IsActive: true,
+        Sprites: [SPRITE_SHEET_DATA.Sand],
+        ButtonAction: () => { setActiveBrush("Sand"); },
+    },
+    Water: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Water],
+        ButtonAction: () => { setActiveBrush("Water"); },
+    },
+    Seed: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Seed],
+        ButtonAction: () => { setActiveBrush("Seed"); },
+    },
+    Ant: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Ant],
+        ButtonAction: () => { setActiveBrush("Ant"); },
+    },
+    Wasp: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Wasp],
+        ButtonAction: () => { setActiveBrush("Wasp"); },
+    },
+    Acid: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Acid],
+        ButtonAction: () => { setActiveBrush("Acid"); },
+    },
+    Fire: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Fire],
+        ButtonAction: () => { setActiveBrush("Fire"); },
+    },
+    Ice: {
+        ButtonType: "Brush",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Ice],
+        ButtonAction: () => { setActiveBrush("Ice"); },
+    },
+    Play: {
+        ButtonType: "World",
+        Sprites: [
+            SPRITE_SHEET_DATA.Start,
+            SPRITE_SHEET_DATA.Stop,
+        ],
+        ButtonAction: () => {
+            IsRunning = !IsRunning;
+            setButtonActivity("Play", true);
 
-        this.autoLayout();
+            sendSiteEventToGame("world:" + (IsRunning ? "start" : "stop"));
 
-        // Set up event listeners
-        $(window).on('resize', () => {
-            this.autoLayout();
-        });
-
-        $(window).on('orientationchange', () => {
-            // Add a small delay to ensure dimensions are updated
             setTimeout(() => {
-                this.autoLayout();
-            }, 100);
-        });
-
-        // Listen for messages coming from the WASM game iframe.
-        // Expected shape: { type: 'ui-cmd', payload: '...' }
-        window.addEventListener('message', (event) => {
-            const data = event.data;
-            if (!data || data.type !== 'ui-cmd' || typeof data.payload !== 'string') {
-                return;
+                setButtonActivity("Play", false);
+            }, 200);
+        },
+    },
+    Size: {
+        ButtonType: "World",
+        Sprites: [
+            SPRITE_SHEET_DATA.Size1,
+            SPRITE_SHEET_DATA.Size2,
+            SPRITE_SHEET_DATA.Size3,
+            SPRITE_SHEET_DATA.Size4,
+            SPRITE_SHEET_DATA.Size5,
+        ],
+        ButtonAction: () => {
+            const brush_scale = {
+                1: 8,
+                2: 14,
+                3: 20,
+                4: 26,
+                5: 32
             }
 
-            const payload = data.payload;
+            setButtonActivity("Size", true);
 
-            // Brush selection coming from Go: \"brush_select:<name>\"
-            if (payload.startsWith('brush_select:')) {
-                const parts = payload.split(':');
-                const key = (parts[1] || '').trim();
-                if (!key) {
-                    return;
-                }
+            BrushSize += 1;
+            if (BrushSize > 5) BrushSize = 1;
 
-                // Convert \"sand\" -> \"Sand\" etc. to match our button naming.
-                const brushName = key.charAt(0).toUpperCase() + key.slice(1);
-                this.setBrushFromGame(brushName);
-            }
-        });
-    }
+            sendSiteEventToGame("brush_size:" + brush_scale[BrushSize]);
+
+            setTimeout(() => {
+                setButtonActivity("Size", false);
+            }, 200);
+        },
+    },
+    Erase: {
+        ButtonType: "World",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Erase],
+        ButtonAction: () => {
+            openConfirmDialog("Erase");
+        },
+    },
+    Gen: {
+        ButtonType: "World",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Gen],
+        ButtonAction: () => {
+            openConfirmDialog("Gen");
+        },
+    },
+    Menu: {
+        ButtonType: "World",
+        IsActive: false,
+        Sprites: [SPRITE_SHEET_DATA.Menu],
+        ButtonAction: () => {
+            openMenuPopup();
+        },
+    },
 };
 
-// Initialize the app when the DOM is ready (modern jQuery shorthand)
-$(function () {
-    App.initialize();
+const Layouts = {
+    FullVertical: {
+        PanelA: {
+            Columns: 4,
+            Rows: 4,
+            Buttons: [
+                "Size",
+                "Play",
+                "Gen",
+                "Erase",
+                "Empty",
+                "Stone",
+                "Sand",
+                "Water",
+                "Seed",
+                "Ant",
+                "Wasp",
+                "Acid",
+                "Fire",
+                "Ice",
+                "NONE",
+                "Menu",
+            ],
+        },
+        PanelB: null,
+        MainContainer: {
+            FlexDirection: "column",
+            Order: ["GameWindow", "ButtonPanelA"],
+        },
+        GameWindow: {
+            Width: "100cqw",
+            Height: "100cqw",
+            Flex: "0 0 auto",
+        },
+        GameFrame: {
+            Border: "border-full-vertical",
+        }
+    },
+    SmallVertical: {
+        PanelA: {
+            Columns: 8,
+            Rows: 2,
+            Buttons: [
+                "Empty",
+                "Stone",
+                "Sand",
+                "Water",
+                "Seed",
+                "Gen",
+                "Erase",
+                "Size",
+                "Ant",
+                "Wasp",
+                "Acid",
+                "Fire",
+                "Ice",
+                "Play",
+                "NONE",
+                "Menu",
+            ],
+        },
+        PanelB: null,
+        MainContainer: {
+            FlexDirection: "column",
+            Order: ["GameWindow", "ButtonPanelA"],
+        },
+        GameWindow: {
+            Flex: "1 1 auto",
+        },
+        GameFrame: {
+            Border: "border-small-vertical",
+        }
+    },
+    FullHorizontal: {
+        PanelA: {
+            Columns: 2,
+            Rows: 5,
+            Buttons: [
+                "Empty",
+                "Stone",
+                "Sand",
+                "Water",
+                "Seed",
+                "Ant",
+                "Wasp",
+                "Acid",
+                "Fire",
+                "Ice",
+            ],
+        },
+        PanelB: {
+            Columns: 2,
+            Rows: 5,
+            Buttons: [
+                "Play",
+                "Size",
+                "Gen",
+                "Erase",
+                "NONE",
+                "NONE",
+                "NONE",
+                "NONE",
+                "NONE",
+                "Menu",
+            ],
+        },
+        MainContainer: {
+            FlexDirection: "row",
+            Order: ["ButtonPanelA", "GameWindow", "ButtonPanelB"],
+        },
+        GameWindow: {
+            Width: "100cqh",
+            Height: "100cqh",
+            Flex: "0 0 auto",
+        },
+        GameFrame: {
+            Border: "border-full-horizontal",
+        }
+    },
+    SmallHorizontal: {
+        PanelA: {
+            Columns: 2,
+            Rows: 8,
+            Buttons: [
+                "Empty",
+                "Stone",
+                "Sand",
+                "Water",
+                "Seed",
+                "Ant",
+                "Wasp",
+                "Acid",
+                "Fire",
+                "Ice",
+                "Size",
+                "Play",
+                "Gen",
+                "Erase",
+                "Menu",
+                "NONE",
+            ],
+        },
+        PanelB: null,
+        MainContainer: {
+            FlexDirection: "row",
+            Order: ["ButtonPanelA", "GameWindow"],
+        },
+        GameWindow: {
+            Flex: "1 1 auto",
+        },
+        GameFrame: {
+            Border: "border-small-horizontal",
+        }
+    },
+};
+
+// Reference to HTML elements
+const MainContainer = document.getElementById("MainContainer");
+const GameWindow = document.getElementById("GameWindow");
+const GameContainer = document.getElementById("GameContainer");
+const GameFrame = document.getElementById("GameFrame");
+const ButtonPanelA = document.getElementById("ButtonPanelA");
+const ButtonPanelB = document.getElementById("ButtonPanelB");
+const PopUp = document.getElementById("PopUp");
+
+// Game state
+let CurrentLayout = "NoLayout";
+let IsRunning = true;
+let DebugMode = false;
+let FullScreenMode = false;
+let AutoRotateWorld = true;
+let ActiveBrush = "Sand";
+let BrushSize = 2;
+let ActivePopUp = null;
+let ActivePopUpWindowEl = null;
+let RefreshMenu = null;
+let LastAngle = screen.orientation?.angle ?? 0;
+
+// pass these string events to the game inside the WebAssembly game frame
+function sendSiteEventToGame(event) {
+    console.log("SITE_EVENT:", event);
+    GameFrame.contentWindow.postMessage(
+        { type: "site-event", payload: event },
+        "*"
+    );
+}
+
+// handle string events coming from the game (triggered by keyboard and mouse)
+function handleGameEvent(event) {
+    const data = event.data;
+    if (!data || data.type !== "game-event" || typeof data.payload !== "string") {
+        return;
+    }
+
+    const payload = data.payload;
+
+    console.log("GAME_EVENT:", payload);
+
+    if (payload.startsWith("game:fullscreen")) {
+        switchFullscreen();
+    }
+
+    if (payload.startsWith("world:start")) {
+        IsRunning = true;
+        renderButtons();
+    }
+
+    if (payload.startsWith("world:stop")) {
+        IsRunning = false;
+        renderButtons();
+    }
+
+    if (payload.startsWith("world:debug:")) {
+        const parts = payload.split(":");
+        const key = (parts[2] || "").trim();
+        DebugMode = (key === "on");
+        MENU_ITEMS[1].Text = "debug mode: " + (DebugMode ? "on" : "off");
+    }
+
+    if (payload.startsWith("brush_select:")) {
+        const parts = payload.split(":");
+        const key = (parts[1] || "").trim();
+        setActiveBrush(key);
+    }
+
+    if (payload.startsWith("brush_size:")) {
+        const parts = payload.split(":");
+        const key = (parts[1] || "").trim();
+        const num = parseInt(key);
+
+        const oldBrushSize = BrushSize;
+
+        if (num < 9) {
+            BrushSize = 1;
+        } else if (num < 15) {
+            BrushSize = 2;
+        } else if (num < 21) {
+            BrushSize = 3;
+        } else if (num < 27) {
+            BrushSize = 4;
+        } else {
+            BrushSize = 5;
+        }
+
+        if (oldBrushSize !== BrushSize) {
+            renderButtons();
+        }
+    }
+}
+
+function switchFullscreen() {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+        FullScreenMode = false;
+    } else {
+        MainContainer.requestFullscreen();
+        FullScreenMode = true;
+    }
+    MENU_ITEMS[0].Text = "full screen: " + (FullScreenMode ? "on" : "off");
+}
+
+// Detect the current layout based on aspect ratio
+function detectLayoutMode() {
+    const rect = MainContainer.getBoundingClientRect();
+    const W = rect.width;
+    const H = rect.height;
+
+    if (W <= 0 || H <= 0) return "FullHorizontal";
+
+    const isHorizontal = (W > H);
+
+    const ratio = isHorizontal ? (W / H) : (H / W);
+
+    if (ratio < SMALL_FULL_THRESHOLD) {
+        return isHorizontal ? "SmallHorizontal" : "SmallVertical";
+    }
+
+    return isHorizontal ? "FullHorizontal" : "FullVertical";
+}
+
+
+function setSpriteBackgroundStretch(el, sx, sy) {
+    const { width: elW, height: elH } = el.getBoundingClientRect();
+    const scaleX = elW / SPRITE_SIZE;
+    const scaleY = elH / SPRITE_SIZE;
+
+    // Scale the whole sheet so the sprite rect maps to the element size
+    el.style.backgroundSize = `${SPRITE_SHEET_WIDTH * scaleX}px ${SPRITE_SHEET_HEIGHT * scaleY}px`;
+
+    // Shift sheet so the sprite's top-left aligns with the element's top-left
+    el.style.backgroundPosition = `${-sx * scaleX}px ${-sy * scaleY}px`;
+}
+
+// build the buttons grid according to the current layout
+function buildGrid(el, layout) {
+    el.textContent = "";
+    el.style.gridTemplateColumns = `repeat(${layout.Columns}, 1fr)`;
+    el.style.gridTemplateRows = `repeat(${layout.Rows}, 1fr)`;
+
+    for (let i = 0; i < layout.Columns * layout.Rows; i++) {
+        const btnContainer = document.createElement("div");
+        btnContainer.classList.add("btn-container");
+
+        const btnName = layout.Buttons[i];
+        if (btnName !== "NONE") {
+            const btn = document.createElement("div");
+            btn.classList.add("btn");
+            btn.id = btnName + "Button";
+            btn.addEventListener("click", Buttons[btnName].ButtonAction);
+            btnContainer.appendChild(btn);
+        }
+
+        el.appendChild(btnContainer);
+    }
+}
+
+function setCssOrClear(el, prop, value) {
+    el.style[prop] = (value === undefined || value === null) ? "" : value;
+}
+
+function applyPanelConstraints(layout) {
+    // Clear previous constraints (important when switching layouts)
+    ButtonPanelA.style.flex = "";
+    ButtonPanelA.style.width = "";
+    ButtonPanelA.style.height = "";
+    ButtonPanelA.style.minWidth = "";
+    ButtonPanelA.style.minHeight = "";
+
+    // Also clear any clamp overrides; we'll re-apply if needed
+    // (Do not clear for Full layouts; layout-change block sets those)
+    if (layout === "SmallVertical" || layout === "SmallHorizontal") {
+        GameWindow.style.width = "";
+        GameWindow.style.height = "";
+        GameWindow.style.flex = "1 1 auto";
+    }
+
+    const minStrip = 4 * SPRITE_SIZE;
+
+    const mc = MainContainer.getBoundingClientRect();
+    const W = mc.width;
+    const H = mc.height;
+    if (W <= 0 || H <= 0) return;
+
+    if (layout === "SmallVertical") {
+        // Default: panel is minimum; game takes the rest
+        // If game would be taller than wide, clamp game height to width
+        // and give leftover height to the panel.
+        const clamp = (W < (H - minStrip));
+
+        const gameH = clamp ? Math.floor(W) : null;            // clamp to square
+        const stripH = clamp ? Math.floor(H - W) : minStrip;   // absorb leftover
+
+        ButtonPanelA.style.flex = `0 0 ${stripH}px`;
+        ButtonPanelA.style.height = `${stripH}px`;
+        ButtonPanelA.style.minHeight = `${stripH}px`;
+
+        GameWindow.style.width = "100%";
+        if (clamp) {
+            GameWindow.style.flex = `0 0 ${gameH}px`;
+            GameWindow.style.height = `${gameH}px`;
+        } else {
+            GameWindow.style.flex = "1 1 auto";
+            GameWindow.style.height = "";
+        }
+    }
+
+    if (layout === "SmallHorizontal") {
+        // Default: panel is minimum; game takes the rest
+        // If game would be wider than tall, clamp game width to height
+        // and give leftover width to the panel.
+        const clamp = (H < (W - minStrip));
+
+        const gameW = clamp ? Math.floor(H) : null;            // clamp to square
+        const stripW = clamp ? Math.floor(W - H) : minStrip;   // absorb leftover
+
+        ButtonPanelA.style.flex = `0 0 ${stripW}px`;
+        ButtonPanelA.style.width = `${stripW}px`;
+        ButtonPanelA.style.minWidth = `${stripW}px`;
+
+        GameWindow.style.height = "100%";
+        if (clamp) {
+            GameWindow.style.flex = `0 0 ${gameW}px`;
+            GameWindow.style.width = `${gameW}px`;
+        } else {
+            GameWindow.style.flex = "1 1 auto";
+            GameWindow.style.width = "";
+        }
+    }
+}
+
+function applyGameSquare() {
+    const gw = GameWindow.getBoundingClientRect();
+    const gwW = gw.width;
+    const gwH = gw.height;
+
+    if (gwW <= 0 || gwH <= 0) return;
+
+    const size = Math.max(0, Math.floor(Math.min(gwW, gwH)));
+
+    GameContainer.style.width = `${size}px`;
+    GameContainer.style.height = `${size}px`;
+
+    GameFrame.style.width = "100%";
+    GameFrame.style.height = "100%";
+}
+
+function setActiveBrush(brushName) {
+    if (brushName === ActiveBrush) return;
+    console.log(`ActiveBrush is set from ${ActiveBrush} to ${brushName}`);
+    ActiveBrush = brushName;
+    Object.keys(Buttons).forEach(btnName => {
+        const btn = Buttons[btnName];
+        if (btn.ButtonType === "Brush") {
+            btn.IsActive = (btnName === brushName);
+        }
+    });
+    renderButtons();
+    sendSiteEventToGame("brush_select:" + ActiveBrush.toLowerCase());
+}
+
+function renderButtons() {
+    Object.keys(Buttons).forEach(btnName => {
+        const btn = Buttons[btnName];
+        const el = document.getElementById(btnName + "Button");
+        if (el) {
+            let sprIdx = 0;
+            if (btnName == "Size") {
+                sprIdx = BrushSize - 1;
+            }
+            if (btnName == "Play") {
+                if (IsRunning) {
+                    sprIdx = 1;
+                }
+            }
+            if (btn.IsActive) {
+                setSpriteBackgroundStretch(el, btn.Sprites[sprIdx].Active.x, btn.Sprites[sprIdx].Active.y);
+            } else {
+                setSpriteBackgroundStretch(el, btn.Sprites[sprIdx].Inactive.x, btn.Sprites[sprIdx].Inactive.y);
+            }
+        }
+    });
+}
+
+function setButtonActivity(btnName, isActive) {
+    Buttons[btnName].IsActive = isActive;
+    renderButtons();
+}
+
+function closePopUpAndDeactivate(openerBtnName) {
+    hidePopUp();
+    setButtonActivity(openerBtnName, false);
+}
+
+function positionPopUpWindow(win) {
+    const mc = MainContainer.getBoundingClientRect();
+    const gf = GameFrame.getBoundingClientRect();
+
+    const w = Math.floor(gf.width * 0.9);
+    const h = Math.floor(gf.height * 0.9);
+
+    const left = Math.floor((gf.left - mc.left) + (gf.width - w) / 2);
+    const top = Math.floor((gf.top - mc.top) + (gf.height - h) / 2);
+
+    win.style.width = `${w}px`;
+    win.style.height = `${h}px`;
+    win.style.left = `${left}px`;
+    win.style.top = `${top}px`;
+}
+
+function hidePopUp() {
+    PopUp.classList.add("hidden");
+    PopUp.innerHTML = "";
+    PopUp.onclick = null;
+    ActivePopUp = null;
+
+    ActivePopUpWindowEl = null;
+    RefreshMenu = null;
+}
+
+function showPopUpShell(borderColor, onOutsideClick) {
+    PopUp.classList.remove("hidden");
+    PopUp.innerHTML = "";
+
+    // Clicking anywhere NOT on the window counts as outside (because overlay covers MainContainer)
+    PopUp.onclick = (e) => {
+        if (e.target === PopUp) {
+            onOutsideClick?.();
+        }
+    };
+
+    const win = document.createElement("div");
+    win.className = "popup-window";
+    win.style.borderColor = borderColor;
+
+    // Prevent inside clicks from becoming outside clicks
+    win.addEventListener("click", (e) => e.stopPropagation());
+
+    PopUp.appendChild(win);
+
+    ActivePopUpWindowEl = win;
+    positionPopUpWindow(win);
+
+    return win;
+}
+
+
+function openConfirmDialog(openerBtnName) {
+    if (ActivePopUp) return; // keep current active until answered
+
+    const cfg = DIALOG_DATA[openerBtnName];
+
+    ActivePopUp = { Type: openerBtnName };
+
+    setButtonActivity(openerBtnName, true);
+
+    const win = showPopUpShell(cfg.Color, () => {
+        // outside click counts as No
+        closePopUpAndDeactivate(openerBtnName);
+    });
+
+    const content = document.createElement("div");
+    content.className = "popup-content";
+
+    const msg = document.createElement("div");
+    msg.textContent = cfg.Message; // white by default
+    content.appendChild(msg);
+
+    const actions = document.createElement("div");
+    actions.className = "popup-actions";
+
+    const yesBtn = document.createElement("button");
+    yesBtn.className = "popup-btn";
+    yesBtn.textContent = cfg.YesAnswer;
+    yesBtn.style.color = cfg.Color;        // YesAnswer text color
+    yesBtn.style.borderColor = cfg.Color;  // YesAnswer border color
+
+    yesBtn.addEventListener("click", () => {
+        // Send event to the game (adjust message format if you prefer)
+        sendSiteEventToGame("world:" + cfg.YesAnswer);
+        closePopUpAndDeactivate(openerBtnName);
+    });
+
+    const noBtn = document.createElement("button");
+    noBtn.className = "popup-btn";
+    noBtn.textContent = cfg.NoAnswer;
+    noBtn.style.color = "white";
+    noBtn.style.borderColor = "white";
+
+    noBtn.addEventListener("click", () => {
+        closePopUpAndDeactivate(openerBtnName);
+    });
+
+    actions.appendChild(yesBtn);
+    actions.appendChild(noBtn);
+
+    win.appendChild(content);
+    win.appendChild(actions);
+}
+
+function openMenuPopup() {
+    if (ActivePopUp) return; // keep current active until closed
+
+    ActivePopUp = { Type: "Menu" };
+    setButtonActivity("Menu", true);
+
+    const win = showPopUpShell("white", () => {
+        // outside click closes menu
+        closePopUpAndDeactivate("Menu");
+    });
+
+    const menuWrap = document.createElement("div");
+    menuWrap.className = "popup-menu";
+
+    function rebuildMenuButtons() {
+        menuWrap.innerHTML = "";
+        for (const item of MENU_ITEMS) {
+            const b = document.createElement("button");
+            b.className = "popup-btn popup-menu-btn";
+            b.textContent = item.Text;
+            b.addEventListener("click", () => {
+                item.Action?.();
+                rebuildMenuButtons(); // text may change after action
+            });
+            menuWrap.appendChild(b);
+        }
+    }
+
+    RefreshMenu = rebuildMenuButtons;
+
+    rebuildMenuButtons();
+    win.appendChild(menuWrap);
+}
+
+function normAngle(a) {
+    a = ((a % 360) + 360) % 360;
+
+    return a;
+}
+
+function rotateWorld() {
+    const newAngle = screen.orientation.angle;
+
+    if (AutoRotateWorld) {
+        const delta = (normAngle(newAngle) - normAngle(LastAngle) + 360) % 360;
+
+        if (delta === 90) {
+            sendSiteEventToGame("world:rotate_ccw");
+        }
+
+        if (delta === 180) {
+            sendSiteEventToGame("world:rotate_cw");
+            sendSiteEventToGame("world:rotate_cw");
+        }
+
+        if (delta === 270) {
+            sendSiteEventToGame("world:rotate_cw");
+        }
+    }
+
+    LastAngle = newAngle;
+}
+
+function autoLayout() {
+    const layout = detectLayoutMode();
+
+    if (CurrentLayout !== layout) {
+        console.log(`Layout changed from ${CurrentLayout} to ${layout}`);
+        CurrentLayout = layout;
+
+        const newLayout = Layouts[layout];
+
+        // Rebuild grids
+        buildGrid(ButtonPanelA, newLayout.PanelA);
+        if (newLayout.PanelB) {
+            buildGrid(ButtonPanelB, newLayout.PanelB);
+            ButtonPanelB.classList.remove("hidden");
+        } else {
+            ButtonPanelB.classList.add("hidden");
+        }
+
+        // Flex direction + order (reset first to avoid stale orders)
+        MainContainer.style.flexDirection = newLayout.MainContainer.FlexDirection;
+
+        ["ButtonPanelA", "GameWindow", "ButtonPanelB"].forEach(id => {
+            document.getElementById(id).style.order = "";
+        });
+
+        for (let i = 0; i < newLayout.MainContainer.Order.length; i++) {
+            document.getElementById(newLayout.MainContainer.Order[i]).style.order = i + 1;
+        }
+
+        // GameWindow sizing rules (only set if present; otherwise clear)
+        setCssOrClear(GameWindow, "width", newLayout.GameWindow.Width);
+        setCssOrClear(GameWindow, "height", newLayout.GameWindow.Height);
+        setCssOrClear(GameWindow, "flex", newLayout.GameWindow.Flex);
+
+        GameFrame.classList.remove(
+            "border-full-vertical",
+            "border-small-vertical",
+            "border-full-horizontal",
+            "border-small-horizontal"
+        );
+
+        GameFrame.classList.add(newLayout.GameFrame.Border);
+    }
+
+    // These must run even when layout mode didn't change (resizes)
+    applyPanelConstraints(CurrentLayout);
+    applyGameSquare();
+    renderButtons();
+    rotateWorld();
+
+
+    if (!PopUp.classList.contains("hidden") && ActivePopUpWindowEl) {
+        positionPopUpWindow(ActivePopUpWindowEl);
+    }
+
+}
+
+window.addEventListener("load", async () => {
+    // Listen for any change that can influence layout
+    window.addEventListener("resize", autoLayout);
+    window.addEventListener("orientationchange", autoLayout);
+    if (screen.orientation) {
+        screen.orientation.addEventListener("change", autoLayout);
+    }
+
+    // Listen for game events
+    window.addEventListener("message", handleGameEvent);
+
+    // Call autoLayout once for the initial setup
+    autoLayout();
 });

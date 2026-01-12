@@ -10,9 +10,10 @@
     // Channel parent messages into the WASM game
     window.addEventListener("message", (e) => {
         const data = e.data;
-        if (!data || data.type !== "game-cmd") return;
+        if (!data || data.type !== "site-event") return;
 
         if (window.sendToGame) {
+            console.log('Sending to game', data.payload);
             window.sendToGame(String(data.payload || ""));
         }
     });
