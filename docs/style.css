@@ -84,7 +84,7 @@ body {
     align-items: center;
     image-rendering: pixelated;
     background-repeat: no-repeat;
-    background-image: url("/sprite_sheet.png");
+    background-image: url("buttons.png");
 
     /* fit item to parent, but keep 1:1 aspect-ratio */
     width: min(100cqw, 100cqh);
