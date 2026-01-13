@@ -82,7 +82,6 @@ func NewGame(version, build string) *Game {
 		kind      MaterialKind
 		processor MaterialProcessor
 	}{
-		// Order follows MaterialKind IDs: Sand(2), Water(3), Seed(4), AntHill(5), Acid(6), Fire(7), Ice(8), Smoke(9), Steam(10), Root(11), Plant(12), Flower(13), Ant(14), Wasp(15)
 		{kind: MaterialKindSand, processor: ProcessSand},
 		{kind: MaterialKindWater, processor: ProcessWater},
 		{kind: MaterialKindSeed, processor: ProcessSeed},
@@ -104,8 +103,6 @@ func NewGame(version, build string) *Game {
 		matB     MaterialKind
 		reaction MaterialReaction
 	}{
-		// Order follows MaterialKind IDs: Sand(2), Water(3), Seed(4), AntHill(5), Acid(6), Fire(7), Ice(8), Smoke(9), Steam(10), Root(11), Plant(12), Flower(13), Ant(14), Wasp(15)
-
 		// Sand
 		{matA: MaterialKindSand, matB: MaterialKindEmpty, reaction: AlwaysSwap},
 		{matA: MaterialKindSand, matB: MaterialKindSteam, reaction: SwapReaction(240)},
@@ -123,7 +120,7 @@ func NewGame(version, build string) *Game {
 		{matA: MaterialKindWater, matB: MaterialKindAcid, reaction: ReactionAcidToWater},
 		{matA: MaterialKindWater, matB: MaterialKindFire, reaction: ReactionWaterToFire},
 		{matA: MaterialKindWater, matB: MaterialKindIce, reaction: ReactionWaterToIce},
-		{matA: MaterialKindWater, matB: MaterialKindAnt, reaction: ReactionWaterToAnt},
+		{matA: MaterialKindWater, matB: MaterialKindAnt, reaction: SwapReaction(32)},
 		{matA: MaterialKindWater, matB: MaterialKindAntHill, reaction: ReactionWaterToAntHill},
 		{matA: MaterialKindWater, matB: MaterialKindStone, reaction: ReactionWaterToStone},
 
@@ -134,9 +131,6 @@ func NewGame(version, build string) *Game {
 		{matA: MaterialKindSeed, matB: MaterialKindWater, reaction: SwapReaction(40)},
 		{matA: MaterialKindSeed, matB: MaterialKindAcid, reaction: ReactionSeedToAcid},
 		{matA: MaterialKindSeed, matB: MaterialKindIce, reaction: ReactionSeedToIce},
-
-		// AntHill
-		{matA: MaterialKindAntHill, matB: MaterialKindEmpty, reaction: AlwaysSwap},
 
 		// Acid
 		{matA: MaterialKindAcid, matB: MaterialKindEmpty, reaction: AlwaysSwap},
@@ -219,15 +213,14 @@ func NewGame(version, build string) *Game {
 		{matA: MaterialKindPlant, matB: MaterialKindWater, reaction: ReactionPlantToWater},
 		{matA: MaterialKindPlant, matB: MaterialKindIce, reaction: ReactionPlantToIce},
 
-		// Flower
-		// {matA: MaterialKindFlower, matB: MaterialKindIce, reaction: ReactionFlowerToIce},
+		// Flower (does not moves, so no reactions)
 
 		// Ant
 		{matA: MaterialKindAnt, matB: MaterialKindEmpty, reaction: SwapReaction(220)},
 		{matA: MaterialKindAnt, matB: MaterialKindAntHill, reaction: AlwaysSwap},
 		{matA: MaterialKindAnt, matB: MaterialKindSteam, reaction: SwapReaction(200)},
 		{matA: MaterialKindAnt, matB: MaterialKindSmoke, reaction: SwapReaction(200)},
-		{matA: MaterialKindAnt, matB: MaterialKindWater, reaction: ReactionAntToWater},
+		{matA: MaterialKindAnt, matB: MaterialKindWater, reaction: SwapReaction(48)},
 		{matA: MaterialKindAnt, matB: MaterialKindSand, reaction: ReactionAntToSand},
 		{matA: MaterialKindAnt, matB: MaterialKindStone, reaction: ReactionAntToStone},
 		{matA: MaterialKindAnt, matB: MaterialKindSeed, reaction: AntEatReaction(8)},
@@ -238,9 +231,12 @@ func NewGame(version, build string) *Game {
 		{matA: MaterialKindAnt, matB: MaterialKindFire, reaction: ReactionAntToFire},
 		{matA: MaterialKindAnt, matB: MaterialKindWasp, reaction: ReactionAntToWasp},
 
+		// AntHill
+		{matA: MaterialKindAntHill, matB: MaterialKindEmpty, reaction: AlwaysSwap},
+
 		// Wasp
 		{matA: MaterialKindWasp, matB: MaterialKindEmpty, reaction: AlwaysSwap},
-		{matA: MaterialKindWasp, matB: MaterialKindAntHill, reaction: SwapReaction(64)},
+		{matA: MaterialKindWasp, matB: MaterialKindAntHill, reaction: SwapReaction(32)},
 		{matA: MaterialKindWasp, matB: MaterialKindWater, reaction: ReactionWaspToWater},
 		{matA: MaterialKindWasp, matB: MaterialKindSteam, reaction: ReactionWaspToSteam},
 		{matA: MaterialKindWasp, matB: MaterialKindSmoke, reaction: ReactionWaspToSmoke},
@@ -252,7 +248,6 @@ func NewGame(version, build string) *Game {
 
 	brushes := make([]BrushActions, 16)
 
-	// Order follows MaterialKind IDs: Empty(0), Stone(1), Sand(2), Water(3), Seed(4), AntHill(5), Acid(6), Fire(7), Ice(8), Smoke(9), Steam(10), Root(11), Plant(12), Flower(13), Ant(14), Wasp(15)
 	brushes[MaterialKindEmpty] = BrushActions{FirstAction: brushEmpty}
 	brushes[MaterialKindStone] = BrushActions{FirstAction: brushStonePass1, SecondAction: brushStonePass2}
 	brushes[MaterialKindSand] = BrushActions{FirstAction: brushSand}
@@ -466,6 +461,7 @@ func (g *Game) EraseWorld() {
 
 // materialInfo returns a debug string describing the material under the first cursor.
 // Format: Material name, Life, Status.
+// TODO: make a magnifier tool for this
 func (g *Game) MaterialInfo() string {
 	info := ""
 
@@ -496,10 +492,11 @@ func (g *Game) MaterialInfo() string {
 		}
 		info += fmt.Sprintf("  %s", dir)
 
-	// add life and can bloom
+	// add can bloom and is penetrable
 	case MaterialKindPlant:
 		info += fmt.Sprintf(" CB:%t P:%t", mat.GetCanBloom(), mat.GetIsPenetrable())
 
+	// add is penetrable
 	case MaterialKindSand:
 		info += fmt.Sprintf(" P:%t", mat.GetIsPenetrable())
 	}
@@ -652,6 +649,7 @@ func (g *Game) Draw(target *ebiten.Image) {
 
 	if g.DebugInfo {
 
+		// draw tiles, color them based on activity
 		for x := 0; x < 8; x++ {
 			for y := 0; y < 8; y++ {
 				if (g.ca.wakeTiles & (uint64(1) << uint((y<<3)+x))) != 0 {
@@ -662,6 +660,7 @@ func (g *Game) Draw(target *ebiten.Image) {
 			}
 		}
 
+		// print debug info
 		ebitenutil.DebugPrint(
 			target,
 			fmt.Sprintf(

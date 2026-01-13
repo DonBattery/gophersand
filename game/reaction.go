@@ -895,33 +895,6 @@ func ReactionAntToSand(ca *CellAutomata, matA, matB Material, cidA, cidB int) bo
 	return false
 }
 
-func ReactionAntToWater(ca *CellAutomata, matA, matB Material, cidA, cidB int) bool {
-	// Equal chance with Water to swap.
-	if ca.rngChance256(16) {
-		life := matA.GetLife()
-		if life > 1 {
-			ca.SetCellAsProcessed(cidA, matA.WithLife(life-1))
-			return true
-		}
-		ca.CreateSand(cidA, true)
-		return true
-	}
-	if ca.rngChance256(64) {
-		ca.SwapCells(cidA, cidB)
-		return true
-	}
-	return false
-}
-
-func ReactionWaterToAnt(ca *CellAutomata, matA, matB Material, cidA, cidB int) bool {
-	// Equal chance with Ant to swap (symmetry).
-	if ca.rngChance256(32) {
-		ca.SwapCells(cidA, cidB)
-		return true
-	}
-	return false
-}
-
 func ReactionWaterToAntHill(ca *CellAutomata, matA, matB Material, cidA, cidB int) bool {
 	if ca.rngChance256(200) {
 		return false

@@ -430,8 +430,11 @@ func (ca *CellAutomata) WakenNeighborhood(x, y int) {
 }
 
 /*
-New World Generator
+
+   New World Generator
+
 */
+
 type GeneratorOptions struct {
 	Seed int
 
@@ -449,6 +452,7 @@ type GeneratorOptions struct {
 }
 
 // Generate a new world
+// TODO: make more options, and generate more materials not just stone and empty
 func (ca *CellAutomata) Generate(opts GeneratorOptions) {
 	// Create two 2d array of booleans
 	mapA := [][]bool{}
@@ -480,7 +484,7 @@ func (ca *CellAutomata) Generate(opts GeneratorOptions) {
 		// Iterate over the boolean map
 		for x := 3; x < w-3; x++ {
 			for y := 3; y < h-3; y++ {
-				// For each cell, count the "walls" in its 7x7 neighborhood (excluding itself)
+				// For each cell, count the "walls" in its 7x7 neighborhood (excluding the cell itself)
 				n := 0
 				for dx := -3; dx <= 3; dx++ {
 					for dy := -3; dy <= 3; dy++ {
@@ -631,7 +635,7 @@ func (ca *CellAutomata) Update() {
 		}
 
 		// if any potential activity is detected in the current tile, wake it up for the next update
-		// check if the activity is detected on the edges, and mark neighboring tiles (3x3 neighborhood), as wake accordingly
+		// check if the activity is detected on the edges, and mark neighboring tiles as wake accordingly
 		if isTileActive {
 			nextWakeTiles |= 1 << tid
 			if hitW && gridX > 0 {
@@ -664,7 +668,7 @@ func (ca *CellAutomata) Update() {
 	// The tiles we have detected to be potentially active will be processed in the next update
 	ca.wakeTiles = nextWakeTiles
 
-	// Update the image with the colors of the materials
+	// Update the image with the current colors of the materials
 	ca.img.WritePixels(ca.pixels)
 }
 
