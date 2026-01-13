@@ -11,16 +11,26 @@ The game is hosted on [GitHub Pages](https://donbattery.github.io/gophersand/) -
 As with most games of this type, there is no real goal: you can't win or lose. The player places various materials into the world and watches them react with each other. Although each material follows a relatively simple set of rules, interesting behaviors can emerge from their combinations.
 
 The game features 16 different materials (including the Empty 0 material), from which 10 can be directly put into the world by the player:  
-- **Empty** act as eraser, by default the whole world is empty  
-- **Stone** does not fall, hard to react with  
-- **Sand** falls down and piles up, good soil for a **Seed**  
-- **Water** falls down and spreads, plants love it  
-- **Seed** falls down and spreads a bit, if it gets in contact with **Sand** and **Water**, it turns into a **Root**  
-- **Ant** ant eggs are falling down, ants can climb and dig around creating **AntHills**, they eat plants and lay eggs  
-- **Wasp** wasps need to drink water and eat an ant to lay an egg  
-- **Acid** moves like water, dissolves most materials turning them into either **Smoke** or **Steam**  
-- **Fire** raises up and spreads, creating **Smoke**. It can turn flammable materials into more fire  
-- **Ice** stops most materials it touches, it melts over time creating cold **Water**  
+!["Empty"](assets/empty_button.png) act as eraser, by default the whole world is empty  
+  
+!["Stone"](assets/stone_button.png) does not fall, and hard to react with  
+  
+!["Sand"](assets/sand_button.png) falls down and piles up, good soil for a **Seed**  
+  
+!["Water"](assets/water_button.png) falls down and spreads, plants love it  
+  
+!["Seed"](assets/seed_button.png) falls down and spreads a bit, if it gets in contact with **Sand** and **Water**, it turns into a **Root**  
+  
+!["Ant"](assets/ant_button.png) ant eggs are falling down, ants can climb and dig around creating **AntHills**, they eat plants and lay eggs  
+  
+!["Wasp"](assets/wasp_button.png) need to drink water and eat an ant to lay an egg  
+  
+!["Acid"](assets/acid_button.png) moves like water, dissolves most materials turning them into either **Smoke** or **Steam**  
+  
+!["Fire"](assets/fire_button.png) raises up and spreads, creating **Smoke**. It can turn flammable materials into more fire  
+  
+!["Ice"](assets/ice_button.png) stops most materials it touches, it melts over time creating cold **Water**  
+  
 
 The following 6 materials are product of reactions in the world:  
 - **Smoke** raises up and spreads. **Fire** turns into smoke over some time  
@@ -30,7 +40,7 @@ The following 6 materials are product of reactions in the world:
 - **Flower** has 4 petals and a **Seed** in the middle. If the seed falls out, the flower can grow another one  
 - **AntHill** is created by ants from materials they can dig or eat trough themselves. AntHill is falling down, but does not spreads, it can support sand  
 
-Beside directly putting materials into the world the player can **Generate** a new random world, or **Erase** the curren one by turning every non-empty material into fire. The game reacts to orientation changes, and rotates the world accordingly, creating this cool 90's liquid sand art effect (this behavior can be controlled from the **Menu**)  
+Beside directly putting materials into the world the player can **Generate** a new random world, or **Erase** the curren one by turning every non-empty material into fire. The game reacts to **orientation changes**, and rotates the world accordingly, creating this cool 90's liquid sand art effect (this behavior can be controlled from the **Menu**)  
 
 ## Controls  
 The game can be controlled with: mouse / mouse + keyboard / touch:
