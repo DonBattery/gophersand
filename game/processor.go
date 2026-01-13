@@ -1,5 +1,8 @@
 package game
 
+/*
+   cheap temperature estimation, used by frozen materials in every 5th tick, to see if they can melt
+*/
 func getCold(ca *CellAutomata, x, y int) uint8 {
 	mat := ca.GetMaterialAt(x, y)
 	if mat.IsKind(MaterialKindIce) {
@@ -11,7 +14,7 @@ func getCold(ca *CellAutomata, x, y int) uint8 {
 	return 0
 }
 
-// Returns a value between 0 and 255 representing the number of cold neighbors
+// getTemp returns a value between 0 and 255 representing the number of cold neighbors
 func getTemp(ca *CellAutomata, x, y int) uint8 {
 	var count uint8 = 255
 	count -= getCold(ca, x-1, y)
@@ -20,6 +23,12 @@ func getTemp(ca *CellAutomata, x, y int) uint8 {
 	count -= getCold(ca, x, y+1)
 	return count
 }
+
+/*
+
+   MaterialProcessor for each MaterialKind which is able to "move"
+
+*/
 
 func ProcessSand(ca *CellAutomata, kind MaterialKind, mat Material, cid, x, y int) bool {
 	if mat.GetStatus() == MaterialStatusFrozen {
@@ -265,7 +274,7 @@ func ProcessSeed(ca *CellAutomata, kind MaterialKind, mat Material, cid, x, y in
 	EarlyExit:
 
 		if touchWater && touchSand {
-			ca.SetCellAsProcessed(cid, MaterialRoot.WithLife(ca.rngPick4(120, 180, 200)))
+			ca.CreateRoot(cid)
 			return true
 		}
 	}
@@ -945,7 +954,8 @@ func ProcessAnt(ca *CellAutomata, kind MaterialKind, mat Material, cid, x, y int
 			ca.CreateSand(cid, true)
 			return
 		}
-		if ca.HasNeighborKind(x, y, AntAliveKinds) {
+		// these kinds has a chance to save the ant from starving
+		if ca.HasNeighborKind(x, y, AntAliveKinds) && ca.rngChance256(220) {
 			return
 		}
 		ca.SetCellAsProcessed(cid, mat.WithLife(life-1))

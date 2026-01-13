@@ -1,23 +1,23 @@
+$ErrorActionPreference = "Stop"
+
 # Read version from VERSION file
 $VERSION = (Get-Content -LiteralPath "VERSION" -Raw).Trim()
 
-# Get short git commit hash
-try {
-    $BUILD = (git rev-parse --short HEAD).Trim()
-}
-catch {
-    $BUILD = "dev"
-}
+# Build stamp: yyyy.MM.dd#HH:mm:ss#git-hash
+$hash = (git rev-parse --short HEAD).Trim()
+$timestamp = (Get-Date).ToString("yyyy.MM.dd#HH:mm:ss")
+$BUILD = "$timestamp#$hash"
 
-# Set build environment
+# Set build environment for WebAssembly
 $Env:GOOS = "js"
 $Env:GOARCH = "wasm"
 
-# Build with ldflags (pass as a separate argument)
+# Set build flags
 $ldflags = "-X main.VERSION=$VERSION -X main.BUILD=$BUILD"
-Write-Host "ldflags = $ldflags"
 
+# Build
 go build -ldflags $ldflags -o "docs/gophersand.wasm" .
 
 # Clean up environment
-Remove-Item Env:GOOS, Env:GOARCH
+Remove-Item Env:GOOS
+Remove-Item Env:GOARCH

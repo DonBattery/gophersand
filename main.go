@@ -6,7 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-const (
+var (
 	VERSION = "dev"
 	BUILD   = "latest"
 )
